@@ -127,13 +127,13 @@
 
     <g transform="translate(500, 200)">
       <rect x="0" y="0" width="168" height="40" rx="5" fill="#FFF5F0" stroke="#FEEBC8"/>
-      <text x="84" y="17" font-size="11" fill="#E25A1C" text-anchor="middle" font-weight="600">useArrow sweet spot</text>
+      <text x="84" y="17" font-size="11" fill="#E25A1C" text-anchor="middle" font-weight="600">@udf(useArrow) mid-range</text>
       <text x="84" y="33" font-size="10" fill="#9C4221" text-anchor="middle">batched transport, scalar exec</text>
     </g>
 
     <g transform="translate(500, 278)">
       <rect x="0" y="0" width="168" height="25" rx="5" fill="#FFFFF0" stroke="#FEFCBF"/>
-      <text x="84" y="17" font-size="11" fill="#d4920b" text-anchor="middle" font-weight="600">Pandas plateau ~5-7x</text>
+      <text x="84" y="17" font-size="11" fill="#d4920b" text-anchor="middle" font-weight="600">@pandas_udf plateau ~5-7x</text>
     </g>
   </g>
 
@@ -149,19 +149,19 @@
 
     <line x1="185" y1="6" x2="205" y2="6" stroke="#d4920b" stroke-width="2.5"/>
     <circle cx="195" cy="6" r="3" fill="#d4920b"/>
-    <text x="211" y="10" fill="#4A5568">Pandas UDF</text>
+    <text x="211" y="10" fill="#4A5568">@pandas_udf</text>
 
     <line x1="300" y1="6" x2="320" y2="6" stroke="#E25A1C" stroke-width="2.5"/>
     <circle cx="310" cy="6" r="3" fill="#E25A1C"/>
-    <text x="326" y="10" fill="#4A5568">useArrow UDF</text>
+    <text x="326" y="10" fill="#4A5568">@udf(useArrow)</text>
 
     <line x1="415" y1="6" x2="435" y2="6" stroke="#9C4221" stroke-width="2.5" stroke-dasharray="6,3"/>
     <circle cx="425" cy="6" r="3" fill="#9C4221"/>
-    <text x="441" y="10" fill="#4A5568">Arrow-opt @udf</text>
+    <text x="441" y="10" fill="#4A5568">@udf + arrow config</text>
 
     <line x1="560" y1="6" x2="580" y2="6" stroke="#D13913" stroke-width="2.5"/>
     <circle cx="570" cy="6" r="3" fill="#D13913"/>
-    <text x="586" y="10" fill="#4A5568">Pickle @udf</text>
+    <text x="586" y="10" fill="#4A5568">@udf (default)</text>
   </g>
 
   <rect x="0" y="516" width="960" height="4" fill="#E25A1C"/>
