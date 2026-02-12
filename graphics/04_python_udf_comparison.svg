@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 700" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+  <defs>
+    <linearGradient id="bar-pickle" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#D13913"/><stop offset="100%" stop-color="#E45A3B"/>
+    </linearGradient>
+    <linearGradient id="bar-arrowopt" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#9C4221"/><stop offset="100%" stop-color="#C05621"/>
+    </linearGradient>
+    <linearGradient id="bar-arrow" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#E25A1C"/><stop offset="100%" stop-color="#F47A3E"/>
+    </linearGradient>
+    <linearGradient id="bar-pandas" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#d4920b"/><stop offset="100%" stop-color="#e3a917"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="700" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="960" height="4" fill="#E25A1C"/>
+
+  <!-- Title -->
+  <text x="480" y="36" font-size="22" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">Python UDF Comparison</text>
+  <text x="480" y="56" font-size="13" fill="#718096" text-anchor="middle">Need Python logic? Here's what each UDF type costs at 50M rows (Spark 4.1.0)</text>
+
+  <!-- Legend -->
+  <g transform="translate(220, 72)">
+    <rect x="0" y="0" width="12" height="10" rx="2" fill="url(#bar-pickle)"/>
+    <text x="16" y="9" font-size="10" fill="#718096">Pickle @udf (default)</text>
+    <rect x="150" y="0" width="12" height="10" rx="2" fill="url(#bar-arrowopt)"/>
+    <text x="166" y="9" font-size="10" fill="#718096">Arrow-opt @udf</text>
+    <rect x="280" y="0" width="12" height="10" rx="2" fill="url(#bar-arrow)"/>
+    <text x="296" y="9" font-size="10" fill="#718096">Arrow UDF (useArrow)</text>
+    <rect x="430" y="0" width="12" height="10" rx="2" fill="url(#bar-pandas)"/>
+    <text x="446" y="9" font-size="10" fill="#718096">Pandas UDF</text>
+  </g>
+
+  <!-- ═══════ Arithmetic (x * 2 + 1) ═══════ -->
+  <g transform="translate(0, 92)">
+    <text x="30" y="14" font-size="14" fill="#1A202C" font-weight="bold">Arithmetic</text>
+    <text x="112" y="14" font-size="12" fill="#A0AEC0" font-style="italic">x * 2 + 1</text>
+
+    <text x="210" y="35" font-size="12" fill="#4A5568" text-anchor="end">Pickle @udf (default)</text>
+    <rect x="220" y="18" width="383" height="26" rx="4" fill="url(#bar-pickle)"/>
+    <text x="611" y="36" font-size="12" fill="#1A202C" font-weight="bold">4.71s</text>
+    <text x="652" y="36" font-size="11" fill="#A0AEC0">baseline</text>
+
+    <text x="210" y="66" font-size="12" fill="#4A5568" text-anchor="end">Arrow-opt @udf</text>
+    <rect x="220" y="49" width="391" height="26" rx="4" fill="url(#bar-arrowopt)"/>
+    <text x="619" y="67" font-size="12" fill="#1A202C" font-weight="bold">4.81s</text>
+    <text x="660" y="67" font-size="11" fill="#A0AEC0">1.0x</text>
+
+    <text x="210" y="97" font-size="12" fill="#4A5568" text-anchor="end">Arrow UDF (useArrow)</text>
+    <rect x="220" y="80" width="160" height="26" rx="4" fill="url(#bar-arrow)"/>
+    <text x="388" y="98" font-size="12" fill="#1A202C" font-weight="bold">1.97s</text>
+    <text x="429" y="98" font-size="11" fill="#238636" font-weight="bold">2.4x faster</text>
+
+    <text x="210" y="128" font-size="12" fill="#4A5568" text-anchor="end">Pandas UDF</text>
+    <rect x="220" y="111" width="63" height="26" rx="4" fill="url(#bar-pandas)"/>
+    <text x="291" y="129" font-size="12" fill="#1A202C" font-weight="bold">0.77s</text>
+    <text x="332" y="129" font-size="11" fill="#238636" font-weight="bold">6.1x faster</text>
+  </g>
+
+  <!-- ═══════ String (upper(x) + '_SUFFIX') ═══════ -->
+  <g transform="translate(0, 254)">
+    <text x="30" y="14" font-size="14" fill="#1A202C" font-weight="bold">String</text>
+    <text x="72" y="14" font-size="12" fill="#A0AEC0" font-style="italic">upper(x) + '_SUFFIX'</text>
+
+    <text x="210" y="35" font-size="12" fill="#4A5568" text-anchor="end">Pickle @udf (default)</text>
+    <rect x="220" y="18" width="458" height="26" rx="4" fill="url(#bar-pickle)"/>
+    <text x="686" y="36" font-size="12" fill="#1A202C" font-weight="bold">5.63s</text>
+    <text x="727" y="36" font-size="11" fill="#A0AEC0">baseline</text>
+
+    <text x="210" y="66" font-size="12" fill="#4A5568" text-anchor="end">Arrow-opt @udf</text>
+    <rect x="220" y="49" width="460" height="26" rx="4" fill="url(#bar-arrowopt)"/>
+    <text x="688" y="67" font-size="12" fill="#1A202C" font-weight="bold">5.65s</text>
+    <text x="729" y="67" font-size="11" fill="#A0AEC0">1.0x</text>
+
+    <text x="210" y="97" font-size="12" fill="#4A5568" text-anchor="end">Arrow UDF (useArrow)</text>
+    <rect x="220" y="80" width="236" height="26" rx="4" fill="url(#bar-arrow)"/>
+    <text x="464" y="98" font-size="12" fill="#1A202C" font-weight="bold">2.90s</text>
+    <text x="505" y="98" font-size="11" fill="#238636" font-weight="bold">1.9x faster</text>
+
+    <text x="210" y="128" font-size="12" fill="#4A5568" text-anchor="end">Pandas UDF</text>
+    <rect x="220" y="111" width="198" height="26" rx="4" fill="url(#bar-pandas)"/>
+    <text x="426" y="129" font-size="12" fill="#1A202C" font-weight="bold">2.43s</text>
+    <text x="467" y="129" font-size="11" fill="#238636" font-weight="bold">2.3x faster</text>
+  </g>
+
+  <!-- ═══════ Normal CDF ═══════ -->
+  <g transform="translate(0, 416)">
+    <text x="30" y="14" font-size="14" fill="#1A202C" font-weight="bold">Normal CDF</text>
+    <text x="116" y="14" font-size="12" fill="#A0AEC0" font-style="italic">0.5 * (1 + erf(x / sqrt(2)))</text>
+
+    <text x="210" y="35" font-size="12" fill="#4A5568" text-anchor="end">Pickle @udf (default)</text>
+    <rect x="220" y="18" width="450" height="26" rx="4" fill="url(#bar-pickle)"/>
+    <text x="678" y="36" font-size="12" fill="#1A202C" font-weight="bold">5.52s</text>
+    <text x="719" y="36" font-size="11" fill="#A0AEC0">baseline</text>
+
+    <text x="210" y="66" font-size="12" fill="#4A5568" text-anchor="end">Arrow-opt @udf</text>
+    <rect x="220" y="49" width="449" height="26" rx="4" fill="url(#bar-arrowopt)"/>
+    <text x="677" y="67" font-size="12" fill="#1A202C" font-weight="bold">5.51s</text>
+    <text x="718" y="67" font-size="11" fill="#A0AEC0">1.0x</text>
+
+    <text x="210" y="97" font-size="12" fill="#4A5568" text-anchor="end">Arrow UDF (useArrow)</text>
+    <rect x="220" y="80" width="203" height="26" rx="4" fill="url(#bar-arrow)"/>
+    <text x="431" y="98" font-size="12" fill="#1A202C" font-weight="bold">2.49s</text>
+    <text x="472" y="98" font-size="11" fill="#238636" font-weight="bold">2.2x faster</text>
+
+    <text x="210" y="128" font-size="12" fill="#4A5568" text-anchor="end">Pandas UDF</text>
+    <rect x="220" y="111" width="66" height="26" rx="4" fill="url(#bar-pandas)"/>
+    <text x="294" y="129" font-size="12" fill="#1A202C" font-weight="bold">0.81s</text>
+    <text x="335" y="129" font-size="11" fill="#238636" font-weight="bold">6.8x faster</text>
+  </g>
+
+  <!-- Key insight box -->
+  <rect x="50" y="585" width="860" height="75" rx="8" fill="#F0FFF4" stroke="#C6F6D5" filter="url(#shadow)"/>
+  <text x="72" y="608" font-size="12" fill="#276749" font-weight="bold">Bottom line:</text>
+  <text x="155" y="608" font-size="12" fill="#2D3748">Switching from @udf to @pandas_udf saves 3.9 seconds per 50M rows on arithmetic (4.71s to 0.77s).</text>
+  <text x="72" y="628" font-size="12" fill="#2D3748">Arrow UDF (useArrow=True) is a solid middle ground at 2-2.4x faster. Arrow-opt config has zero effect.</text>
+  <text x="72" y="648" font-size="12" fill="#2D3748">For complex workloads (CDF), Pandas UDFs are 6.8x faster -- NumPy vectorization dominates.</text>
+
+  <!-- Footer -->
+  <text x="480" y="685" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Measured on Spark 4.1.0, Python 3.12, Spark Connect local[*]. 50M rows, median of 3 runs.</text>
+
+  <rect x="0" y="696" width="960" height="4" fill="#E25A1C"/>
+</svg>

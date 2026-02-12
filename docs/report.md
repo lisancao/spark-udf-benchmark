@@ -227,28 +227,51 @@
 
 ---
 
+## Transport vs Execution: Why Arrow Config Doesn't Help @udf
+
+UDF performance depends on two independent axes: **transport format** (how data moves between JVM and Python) and **execution model** (how Python processes each row).
+
+|  | Pickle Transport | Arrow Transport |
+|---|---|---|
+| **Row-at-a-time execution** | `@udf` (default) **~40x** | `@udf` + arrow config **~40x** |
+| **Vectorized batch execution** | *(not possible)* | `@pandas_udf` **~5-7x** |
+
+The data confirms this model:
+
+- **Transport change alone (pickle → arrow, same execution):** 39.7x → 40.6x = **no improvement**. The `arrow.pyspark.enabled` config changes serialization format but the function still executes once per row. Per-row Python function call overhead dominates.
+- **Execution change (row-at-a-time → vectorized, same transport):** 40.6x → 5-7x = **6-8x improvement**. `@pandas_udf` operates on entire Arrow batches using NumPy/Pandas, amortizing all per-row overhead.
+- **Arrow UDFs (`useArrow=True`) sit between:** ~6-17x. They use `ArrowEvalPython` for vectorized batch transport but still call Python per-row. The transport improvement alone accounts for a 2-2.4x speedup vs default `@udf`.
+
+**Bottom line:** If you're trying to speed up `@udf`, don't reach for Arrow transport config. Switch to `@pandas_udf` (change the execution model) or `@udf(useArrow=True)` (get vectorized transport via `ArrowEvalPython`).
+
+---
+
 ## Key Takeaways
 
-### 1. Arrow UDFs (`useArrow=True`) are a meaningful middle ground
+### 1. If you need Python, use `@pandas_udf`
 
-They sit between Pandas UDFs (~5-7x) and row-at-a-time UDFs (~35-41x) at **~6-17x** depending on workload. They use `ArrowEvalPython` for vectorized transport but still execute Python per-row. For simple functions where Pandas conversion overhead matters, they can be faster.
+Flat **~5-7x** overhead at any scale. At 50M rows: **0.77s** arithmetic vs **4.71s** for default `@udf` -- a 6.1x wall-clock saving. For complex workloads (CDF), the gap is even larger (6.8x) because NumPy's compiled C routines handle vectorized math.
 
-### 2. Pandas UDFs remain the fastest for Python logic
+**When to use:** Your Python logic can operate on Pandas Series or DataFrames (most numeric, string, and statistical operations).
 
-Flat **~5-7x** overhead at any scale. The vectorized Arrow batch transfer + NumPy/Pandas operations amortize serde costs. For complex workloads (CDF), Pandas UDFs benefit from NumPy's compiled C routines.
+### 2. `@udf(useArrow=True)` is a solid middle ground
 
-### 3. Row-at-a-time `@udf` hits ~40x at 50M rows
+Sits at **~6-17x** depending on workload. At 50M rows: **1.97s** arithmetic vs **4.71s** for default `@udf` -- a 2.4x saving. Uses `ArrowEvalPython` for vectorized batch transport but still executes Python per-row.
 
-Confirming the ~50x claim from published benchmarks. Both pickle and Arrow-opt `@udf` converge to the same throughput ceiling (~9-10M rows/s) because the bottleneck is per-row Python function calls, not serialization format.
+**When to use:** You need per-row Python logic but can't express it with Pandas/NumPy APIs. Provides meaningful improvement over default `@udf` with minimal code changes (just add `useArrow=True`).
 
-### 4. SQL UDFs are free at any scale
+### 3. Arrow transport config has zero effect on `@udf`
 
-0.6-1.0x overhead across all scales. They compile to native Catalyst expressions. Use them for any logic expressible in SQL.
+`spark.sql.execution.arrow.pyspark.enabled=true` gives **40.6x vs 39.7x** (pickle) -- no measurable benefit. This config only changes the serialization format. The bottleneck is per-row Python function calls (~9-10M rows/s ceiling), not how bytes are serialized. See the Transport vs Execution section above.
 
-### 5. Arrow transport doesn't help `@udf`
+### 4. SQL UDFs are free -- use them first
 
-`spark.sql.execution.arrow.pyspark.enabled=true` provides **zero measurable benefit** over pickle for `@udf` (40.6x vs 39.7x). Arrow only changes the serialization format -- the function still executes once per row.
+**0.6-1.0x** overhead across all scales. They compile to native Catalyst expressions, same execution plan as built-in functions. Any logic expressible in SQL should use SQL UDFs before reaching for Python.
+
+### 5. Default `@udf` hits ~40x at 50M rows -- avoid at scale
+
+Both pickle and Arrow-opt `@udf` converge to **~40x overhead** at scale (4.71s and 4.81s for 50M rows arithmetic). At 50M rows, that's **4.7 seconds** vs **0.12 seconds** for built-in functions. If your workload processes tens of millions of rows, the default `@udf` is the worst Python option available.
 
 ### 6. `@arrow_udf` (SPARK-53014) has a codegen bug in 4.1.0
 
-The `FoldableUnevaluable.doGenCode` error occurs in both classic and Connect modes. `@udf(useArrow=True)` (SPARK-43082) is the working alternative that goes through the `ArrowEvalPython` physical node.
+The `FoldableUnevaluable.doGenCode` error occurs in both classic and Connect modes. `@udf(useArrow=True)` (SPARK-43082) is the working alternative that routes through the `ArrowEvalPython` physical node.
