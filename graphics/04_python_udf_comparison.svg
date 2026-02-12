@@ -30,10 +30,10 @@
     <text x="16" y="9" font-size="10" fill="#718096">@udf (default)</text>
     <rect x="150" y="0" width="12" height="10" rx="2" fill="url(#bar-arrowopt)"/>
     <text x="166" y="9" font-size="10" fill="#718096">@udf + arrow config</text>
-    <rect x="280" y="0" width="12" height="10" rx="2" fill="url(#bar-arrow)"/>
-    <text x="296" y="9" font-size="10" fill="#718096">@udf(useArrow)</text>
-    <rect x="430" y="0" width="12" height="10" rx="2" fill="url(#bar-pandas)"/>
-    <text x="446" y="9" font-size="10" fill="#718096">@pandas_udf</text>
+    <rect x="300" y="0" width="12" height="10" rx="2" fill="url(#bar-arrow)"/>
+    <text x="316" y="9" font-size="10" fill="#718096">@udf(useArrow)</text>
+    <rect x="440" y="0" width="12" height="10" rx="2" fill="url(#bar-pandas)"/>
+    <text x="456" y="9" font-size="10" fill="#718096">@pandas_udf</text>
   </g>
 
   <!-- ═══════ Arithmetic (x * 2 + 1) ═══════ -->

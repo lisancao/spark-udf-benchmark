@@ -132,19 +132,19 @@
   </g>
 
   <!-- Legend -->
-  <g transform="translate(140, 600)" font-size="10">
+  <g transform="translate(80, 600)" font-size="10">
     <rect x="0" y="0" width="12" height="12" rx="2" fill="url(#g-builtin)"/>
     <text x="16" y="10" fill="#4A5568">Built-in</text>
-    <rect x="70" y="0" width="12" height="12" rx="2" fill="url(#g-sql)"/>
-    <text x="86" y="10" fill="#4A5568">SQL UDF</text>
-    <rect x="145" y="0" width="12" height="12" rx="2" fill="url(#g-pandas)"/>
-    <text x="161" y="10" fill="#4A5568">@pandas_udf</text>
-    <rect x="245" y="0" width="12" height="12" rx="2" fill="url(#g-arrow)"/>
-    <text x="261" y="10" fill="#4A5568">@udf(useArrow)</text>
-    <rect x="345" y="0" width="12" height="12" rx="2" fill="url(#g-arrowopt)"/>
-    <text x="361" y="10" fill="#4A5568">@udf + arrow config</text>
-    <rect x="470" y="0" width="12" height="12" rx="2" fill="url(#g-pickle)"/>
-    <text x="486" y="10" fill="#4A5568">@udf (default)</text>
+    <rect x="75" y="0" width="12" height="12" rx="2" fill="url(#g-sql)"/>
+    <text x="91" y="10" fill="#4A5568">SQL UDF</text>
+    <rect x="150" y="0" width="12" height="12" rx="2" fill="url(#g-pandas)"/>
+    <text x="166" y="10" fill="#4A5568">@pandas_udf</text>
+    <rect x="260" y="0" width="12" height="12" rx="2" fill="url(#g-arrow)"/>
+    <text x="276" y="10" fill="#4A5568">@udf(useArrow)</text>
+    <rect x="390" y="0" width="12" height="12" rx="2" fill="url(#g-arrowopt)"/>
+    <text x="406" y="10" fill="#4A5568">@udf + arrow config</text>
+    <rect x="545" y="0" width="12" height="12" rx="2" fill="url(#g-pickle)"/>
+    <text x="561" y="10" fill="#4A5568">@udf (default)</text>
   </g>
 
   <rect x="0" y="636" width="960" height="4" fill="#E25A1C"/>
