@@ -3,7 +3,7 @@
 Runs with TINY scale (1 000 rows) to verify UDF types produce correct
 results and that timing is recorded.
 
-Arrow UDFs are skipped in classic mode (codegen limitation in Spark 4.1).
+Arrow UDFs use ArrowEvalPython and work in both classic and Connect modes.
 """
 
 import pytest
