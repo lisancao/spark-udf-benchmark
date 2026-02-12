@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 800" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 860" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
   <defs>
     <linearGradient id="h-builtin" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0%" stop-color="#238636"/><stop offset="100%" stop-color="#2ea043"/>
@@ -12,6 +12,9 @@
     <linearGradient id="h-pandas" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0%" stop-color="#d4920b"/><stop offset="100%" stop-color="#e3a917"/>
     </linearGradient>
+    <linearGradient id="h-arrowudf" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#8957e5"/><stop offset="100%" stop-color="#a371f7"/>
+    </linearGradient>
     <linearGradient id="h-arrowopt" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0%" stop-color="#9C4221"/><stop offset="100%" stop-color="#C05621"/>
     </linearGradient>
@@ -23,7 +26,7 @@
     </filter>
   </defs>
 
-  <rect width="960" height="800" fill="#FFFFFF"/>
+  <rect width="960" height="860" fill="#FFFFFF"/>
   <rect x="0" y="0" width="960" height="4" fill="#E25A1C"/>
 
   <!-- Title -->
@@ -54,10 +57,11 @@
   <text x="52" y="232" font-size="11" fill="#276749" font-style="italic">Use when: Logic expressible in SQL or built-in Spark functions -- essentially free</text>
 
   <!-- ════ Tier 2: Vectorized Python ════ -->
-  <rect x="30" y="268" width="900" height="195" rx="10" fill="#FFFFF0" stroke="#FEFCBF" filter="url(#shadow)"/>
+  <rect x="30" y="268" width="900" height="250" rx="10" fill="#FFFFF0" stroke="#FEFCBF" filter="url(#shadow)"/>
   <text x="52" y="290" font-size="11" fill="#975A16" font-weight="bold" letter-spacing="1.5">VECTORIZED PYTHON (ARROW BATCHES)</text>
   <text x="880" y="290" font-size="11" fill="#975A16" text-anchor="end">0.8-2.9s at 50M rows</text>
 
+  <!-- Pandas UDFs bar -->
   <g transform="translate(50, 301)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-pandas)"/>
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">Pandas UDFs</text>
@@ -66,26 +70,40 @@
     <text x="436" y="34" font-size="10" fill="#238636" font-weight="bold">Best option for Python logic</text>
   </g>
 
+  <!-- Arrow-native UDFs (@arrow_udf) bar -->
   <g transform="translate(50, 355)">
+    <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-arrowudf)"/>
+    <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">Arrow-native UDFs (@arrow_udf)</text>
+    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~5x</text>
+    <text x="436" y="18" font-size="11" fill="#6B46C1">pyarrow.compute, no Pandas conversion overhead</text>
+    <text x="436" y="34" font-size="10" fill="#8957e5">verified in 4.1.0 — fastest for string ops</text>
+  </g>
+
+  <!-- useArrow UDFs bar (renamed) -->
+  <g transform="translate(50, 409)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-arrow)"/>
-    <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">Arrow UDFs (useArrow)</text>
+    <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">useArrow UDFs</text>
     <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~6-17x</text>
     <text x="436" y="18" font-size="11" fill="#9C4221">ArrowEvalPython, per-row Python</text>
     <text x="436" y="34" font-size="10" fill="#E25A1C">vectorized transport, scalar execution</text>
   </g>
 
-  <!-- "Start here" callout for Pandas UDFs -->
-  <rect x="700" y="298" width="195" height="24" rx="12" fill="#238636"/>
-  <text x="798" y="315" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="bold">If you need Python, start here</text>
+  <!-- "Start here" callout spanning @pandas_udf and @arrow_udf -->
+  <rect x="700" y="324" width="195" height="48" rx="12" fill="#238636"/>
+  <text x="798" y="343" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="bold">If you need Python,</text>
+  <text x="798" y="359" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="bold">start here</text>
+  <!-- Bracket lines connecting callout to both bars -->
+  <line x1="700" y1="336" x2="680" y2="321" stroke="#238636" stroke-width="1.5"/>
+  <line x1="700" y1="360" x2="680" y2="375" stroke="#238636" stroke-width="1.5"/>
 
-  <text x="52" y="443" font-size="11" fill="#975A16" font-style="italic">Use when: Need Python + can use Pandas/NumPy vectorized operations</text>
+  <text x="52" y="498" font-size="11" fill="#975A16" font-style="italic">Use when: Need Python + can use Pandas/NumPy vectorized operations</text>
 
   <!-- ════ Tier 3: Row-at-a-time Python ════ -->
-  <rect x="30" y="479" width="900" height="195" rx="10" fill="#FFF5F5" stroke="#FED7D7" filter="url(#shadow)"/>
-  <text x="52" y="501" font-size="11" fill="#9B2C2C" font-weight="bold" letter-spacing="1.5">ROW-AT-A-TIME PYTHON (PER-ROW SERDE)</text>
-  <text x="880" y="501" font-size="11" fill="#9B2C2C" text-anchor="end">4.7-5.7s at 50M rows</text>
+  <rect x="30" y="534" width="900" height="195" rx="10" fill="#FFF5F5" stroke="#FED7D7" filter="url(#shadow)"/>
+  <text x="52" y="556" font-size="11" fill="#9B2C2C" font-weight="bold" letter-spacing="1.5">ROW-AT-A-TIME PYTHON (PER-ROW SERDE)</text>
+  <text x="880" y="556" font-size="11" fill="#9B2C2C" text-anchor="end">4.7-5.7s at 50M rows</text>
 
-  <g transform="translate(50, 514)">
+  <g transform="translate(50, 569)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-arrowopt)"/>
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">Arrow-opt Python @udf</text>
     <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~35-41x</text>
@@ -93,7 +111,7 @@
     <text x="436" y="34" font-size="10" fill="#FC8181">format change only -- 4.81s arithmetic</text>
   </g>
 
-  <g transform="translate(50, 568)">
+  <g transform="translate(50, 623)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-pickle)"/>
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">Pickle Python @udf</text>
     <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~35-40x</text>
@@ -101,26 +119,26 @@
     <text x="436" y="34" font-size="10" fill="#FC8181">default -- avoid at scale -- 4.71s arithmetic</text>
   </g>
 
-  <text x="52" y="654" font-size="11" fill="#9B2C2C" font-style="italic">Last resort: Per-row Python logic that can't use Pandas/NumPy vectorization</text>
+  <text x="52" y="709" font-size="11" fill="#9B2C2C" font-style="italic">Last resort: Per-row Python logic that can't use Pandas/NumPy vectorization</text>
 
   <!-- Key insight box -->
-  <rect x="50" y="680" width="860" height="75" rx="8" fill="#EBF8FF" stroke="#BEE3F8"/>
-  <text x="72" y="702" font-size="12" fill="#2B6CB0" font-weight="bold">Practical guidance:</text>
-  <text x="185" y="702" font-size="12" fill="#2D3748">Can you use SQL? Free. Need Python? Start with @pandas_udf (5-7x). Can't vectorize? Try @udf(useArrow=True) (6-17x).</text>
-  <text x="72" y="722" font-size="12" fill="#2D3748">Arrow transport config has zero effect on @udf (39.7x vs 40.6x) -- the bottleneck is per-row Python calls, not serialization.</text>
-  <text x="72" y="742" font-size="12" fill="#2D3748">At 50M rows, @pandas_udf finishes in 0.77s arithmetic vs 4.71s for default @udf -- a 6.1x real-time saving.</text>
+  <rect x="50" y="735" width="860" height="75" rx="8" fill="#EBF8FF" stroke="#BEE3F8"/>
+  <text x="72" y="757" font-size="12" fill="#2B6CB0" font-weight="bold">Practical guidance:</text>
+  <text x="185" y="757" font-size="12" fill="#2D3748">Can you use SQL? Free. Need Python? Start with @pandas_udf (5-7x). Can't vectorize? Try @udf(useArrow=True) (6-17x).</text>
+  <text x="72" y="777" font-size="12" fill="#2D3748">Arrow transport config has zero effect on @udf (39.7x vs 40.6x) -- the bottleneck is per-row Python calls, not serialization.</text>
+  <text x="72" y="797" font-size="12" fill="#2D3748">At 50M rows, @pandas_udf finishes in 0.77s arithmetic vs 4.71s for default @udf -- a 6.1x real-time saving.</text>
 
   <!-- Scale indicator -->
   <g transform="translate(910, 115)">
-    <line x1="0" y1="0" x2="0" y2="500" stroke="#CBD5E0" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="0" y2="555" stroke="#CBD5E0" stroke-width="1.5"/>
     <polygon points="-5,0 5,0 0,-8" fill="#238636"/>
     <text x="0" y="-12" font-size="9" fill="#238636" text-anchor="middle">Faster</text>
-    <polygon points="-5,500 5,500 0,508" fill="#D13913"/>
-    <text x="0" y="522" font-size="9" fill="#D13913" text-anchor="middle">Slower</text>
+    <polygon points="-5,555 5,555 0,563" fill="#D13913"/>
+    <text x="0" y="577" font-size="9" fill="#D13913" text-anchor="middle">Slower</text>
   </g>
 
   <!-- Footer -->
-  <text x="480" y="780" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Measured on Spark 4.1.0, Python 3.12, Spark Connect local[*]. 50M rows, median of 3 runs.</text>
+  <text x="480" y="840" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Measured on Spark 4.1.0, Python 3.12, Spark Connect local[*]. 50M rows, median of 3 runs.</text>
 
-  <rect x="0" y="796" width="960" height="4" fill="#E25A1C"/>
+  <rect x="0" y="856" width="960" height="4" fill="#E25A1C"/>
 </svg>
