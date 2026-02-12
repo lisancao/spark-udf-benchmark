@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spark-udf-benchmark"
+version = "1.0.0"
+description = "Reproducible UDF performance benchmark for Apache Spark 4.1"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = [
+    "pyspark==4.1.0",
+    "pyarrow>=17.0,<19.0",
+    "pandas>=2.0,<3.0",
+    "numpy>=1.26,<2.0",
+    "scipy>=1.12,<2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-timeout>=2.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 120
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spark_udf_benchmark"]

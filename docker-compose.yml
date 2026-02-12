@@ -1,0 +1,20 @@
+services:
+  benchmark:
+    build: .
+    environment:
+      - SPARK_MASTER=local[*]
+      - PYSPARK_PYTHON=python3
+    volumes:
+      - ./results:/opt/benchmark/results
+    # Override CMD to run specific scale:
+    #   docker compose run benchmark --rows 50000000
+    #
+    # Run tests:
+    #   docker compose run benchmark pytest tests/ -v
+
+  test:
+    build: .
+    entrypoint: ["python3", "-m", "pytest"]
+    command: ["tests/", "-v"]
+    environment:
+      - PYSPARK_PYTHON=python3

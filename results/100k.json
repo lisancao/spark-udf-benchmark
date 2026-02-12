@@ -1,0 +1,152 @@
+{
+  "metadata": {
+    "run_id": "81a616c5",
+    "benchmark_type": "udf_pipeline",
+    "row_count": 100000,
+    "warmup_runs": 1,
+    "benchmark_runs": 3,
+    "timestamp": "2026-02-12T19:08:39.018634+00:00"
+  },
+  "results": {
+    "builtin_arithmetic": {
+      "udf_type": "builtin",
+      "workload": "arithmetic",
+      "row_count": 100000,
+      "duration_seconds": 0.067491,
+      "rows_per_second": 1481668.35,
+      "relative_overhead": 1.0,
+      "timestamp": "2026-02-12T19:08:30.405759+00:00",
+      "run_id": "81a616c5"
+    },
+    "sql_udf_arithmetic": {
+      "udf_type": "sql_udf",
+      "workload": "arithmetic",
+      "row_count": 100000,
+      "duration_seconds": 0.050378,
+      "rows_per_second": 1984977.49,
+      "relative_overhead": 0.75,
+      "timestamp": "2026-02-12T19:08:30.685003+00:00",
+      "run_id": "81a616c5"
+    },
+    "pandas_udf_arithmetic": {
+      "udf_type": "pandas_udf",
+      "workload": "arithmetic",
+      "row_count": 100000,
+      "duration_seconds": 0.175037,
+      "rows_per_second": 571308.69,
+      "relative_overhead": 2.59,
+      "timestamp": "2026-02-12T19:08:32.280355+00:00",
+      "run_id": "81a616c5"
+    },
+    "arrow_opt_python_arithmetic": {
+      "udf_type": "arrow_opt_python",
+      "workload": "arithmetic",
+      "row_count": 100000,
+      "duration_seconds": 0.166436,
+      "rows_per_second": 600830.33,
+      "relative_overhead": 2.47,
+      "timestamp": "2026-02-12T19:08:33.007035+00:00",
+      "run_id": "81a616c5"
+    },
+    "pickle_python_arithmetic": {
+      "udf_type": "pickle_python",
+      "workload": "arithmetic",
+      "row_count": 100000,
+      "duration_seconds": 0.15292,
+      "rows_per_second": 653936.95,
+      "relative_overhead": 2.27,
+      "timestamp": "2026-02-12T19:08:33.661073+00:00",
+      "run_id": "81a616c5"
+    },
+    "builtin_string": {
+      "udf_type": "builtin",
+      "workload": "string",
+      "row_count": 100000,
+      "duration_seconds": 0.03254,
+      "rows_per_second": 3073122.71,
+      "relative_overhead": 1.0,
+      "timestamp": "2026-02-12T19:08:34.404659+00:00",
+      "run_id": "81a616c5"
+    },
+    "sql_udf_string": {
+      "udf_type": "sql_udf",
+      "workload": "string",
+      "row_count": 100000,
+      "duration_seconds": 0.031562,
+      "rows_per_second": 3168382.38,
+      "relative_overhead": 0.97,
+      "timestamp": "2026-02-12T19:08:34.562683+00:00",
+      "run_id": "81a616c5"
+    },
+    "pandas_udf_string": {
+      "udf_type": "pandas_udf",
+      "workload": "string",
+      "row_count": 100000,
+      "duration_seconds": 0.164639,
+      "rows_per_second": 607388.22,
+      "relative_overhead": 5.06,
+      "timestamp": "2026-02-12T19:08:35.339022+00:00",
+      "run_id": "81a616c5"
+    },
+    "arrow_opt_python_string": {
+      "udf_type": "arrow_opt_python",
+      "workload": "string",
+      "row_count": 100000,
+      "duration_seconds": 0.149087,
+      "rows_per_second": 670751.07,
+      "relative_overhead": 4.58,
+      "timestamp": "2026-02-12T19:08:35.974386+00:00",
+      "run_id": "81a616c5"
+    },
+    "pickle_python_string": {
+      "udf_type": "pickle_python",
+      "workload": "string",
+      "row_count": 100000,
+      "duration_seconds": 0.156879,
+      "rows_per_second": 637433.9,
+      "relative_overhead": 4.82,
+      "timestamp": "2026-02-12T19:08:36.617714+00:00",
+      "run_id": "81a616c5"
+    },
+    "builtin_cdf": {
+      "udf_type": "builtin",
+      "workload": "cdf",
+      "row_count": 100000,
+      "duration_seconds": 0.040281,
+      "rows_per_second": 2482584.67,
+      "relative_overhead": 1.0,
+      "timestamp": "2026-02-12T19:08:36.909476+00:00",
+      "run_id": "81a616c5"
+    },
+    "pandas_udf_cdf": {
+      "udf_type": "pandas_udf",
+      "workload": "cdf",
+      "row_count": 100000,
+      "duration_seconds": 0.159985,
+      "rows_per_second": 625059.96,
+      "relative_overhead": 3.97,
+      "timestamp": "2026-02-12T19:08:37.778207+00:00",
+      "run_id": "81a616c5"
+    },
+    "arrow_opt_python_cdf": {
+      "udf_type": "arrow_opt_python",
+      "workload": "cdf",
+      "row_count": 100000,
+      "duration_seconds": 0.156351,
+      "rows_per_second": 639587.86,
+      "relative_overhead": 3.88,
+      "timestamp": "2026-02-12T19:08:38.408642+00:00",
+      "run_id": "81a616c5"
+    },
+    "pickle_python_cdf": {
+      "udf_type": "pickle_python",
+      "workload": "cdf",
+      "row_count": 100000,
+      "duration_seconds": 0.150265,
+      "rows_per_second": 665491.13,
+      "relative_overhead": 3.73,
+      "timestamp": "2026-02-12T19:08:39.014933+00:00",
+      "run_id": "81a616c5"
+    }
+  }
+}
