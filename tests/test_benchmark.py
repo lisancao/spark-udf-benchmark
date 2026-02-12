@@ -81,7 +81,6 @@ class TestSqlUDFs:
         assert row.result == "ITEM_00000_SUFFIX"
 
 
-@pytest.mark.skip(reason="arrow_udf codegen not supported in classic mode (Spark 4.1)")
 class TestArrowUDFs:
 
     @pytest.fixture(scope="class")
@@ -96,7 +95,7 @@ class TestArrowUDFs:
     def test_string(self, test_df, arrow_udfs):
         result = test_df.withColumn("result", arrow_udfs["string"](F.col("name")))
         row = result.filter(F.col("id") == 0).select("result").collect()[0]
-        assert "_SUFFIX" in row.result
+        assert row.result == "ITEM_00000_SUFFIX"
 
     def test_cdf(self, test_df, arrow_udfs):
         result = test_df.withColumn("result", arrow_udfs["cdf"](F.col("value")))
@@ -155,7 +154,7 @@ class TestRunComparison:
 
     def test_run_comparison_returns_results(self, benchmark):
         results = benchmark.run_comparison(row_count=TINY_ROWS)
-        assert len(results) >= 11
+        assert len(results) >= 14
         for _key, result in results.items():
             assert isinstance(result, UdfBenchmarkResult)
             assert result.row_count == TINY_ROWS

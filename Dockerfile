@@ -5,6 +5,7 @@ USER root
 # Install Python dependencies
 COPY pyproject.toml /opt/benchmark/pyproject.toml
 RUN pip install --no-cache-dir \
+    "pyspark[connect]==4.1.0" \
     "pyarrow>=17.0,<19.0" \
     "pandas>=2.0,<3.0" \
     "numpy>=1.26,<2.0" \

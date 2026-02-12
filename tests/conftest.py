@@ -21,16 +21,12 @@ def _set_pyspark_python():
 
 @pytest.fixture(scope="session")
 def spark():
-    """Create a SparkSession for testing (local[2], minimal resources)."""
+    """Create a Spark Connect session for testing (local, minimal resources)."""
     session = (
         SparkSession.builder.appName("udf-benchmark-tests")
-        .master("local[2]")
-        .config("spark.driver.memory", "1g")
+        .remote("local[2]")
         .config("spark.sql.shuffle.partitions", "2")
-        .config("spark.default.parallelism", "2")
-        .config("spark.ui.enabled", "false")
         .getOrCreate()
     )
-    session.sparkContext.setLogLevel("ERROR")
     yield session
     session.stop()

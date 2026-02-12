@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 dependencies = [
-    "pyspark==4.1.0",
+    "pyspark[connect]==4.1.0",
     "pyarrow>=17.0,<19.0",
     "pandas>=2.0,<3.0",
     "numpy>=1.26,<2.0",

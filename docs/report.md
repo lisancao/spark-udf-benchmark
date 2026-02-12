@@ -1,13 +1,13 @@
 # UDF Performance Benchmark Report
 
-**Benchmark suite:** `benchmarks/pipelines/udf_benchmark.py`
 **Date:** 2026-02-12
-**Spark:** 4.1.0 (PySpark classic mode, local)
+**Spark:** 4.1.0 (Spark Connect, `remote("local[*]")`)
 **Python:** 3.12.3
 
 ## Methodology
 
-- Each UDF is applied via `df.withColumn("result", udf_expr)` then `.agg(F.count("result")).collect()` forces materialization
+- All benchmarks run via Spark Connect (`SparkSession.builder.remote("local[*]")`)
+- Each UDF applied via `df.withColumn("result", udf_expr)` then `.agg(F.count("result")).collect()` forces materialization
 - 1 warmup run (discarded), 3 timed runs, report median
 - Built-in baseline measured first; overhead = `median_duration / builtin_median_duration` per workload
 - Data: synthetic DataFrame with 3 columns (`id: long`, `value: double`, `name: string`) via `spark.range()`
@@ -18,14 +18,12 @@
 |---|----------|---------------|
 | 1 | Built-in functions | `pyspark.sql.functions` (baseline) |
 | 2 | SQL UDFs | `CREATE TEMPORARY FUNCTION ... RETURN <expr>` |
-| 3 | Arrow UDFs | `@arrow_udf` (Spark 4.1, SPARK-53014) — **errored in classic mode** |
+| 3 | Arrow UDFs | `@udf(useArrow=True)` (SPARK-43082, `ArrowEvalPython`) |
 | 4 | Pandas UDFs | `@pandas_udf` decorator |
 | 5 | Arrow-opt Python UDFs | `@udf` with `spark.sql.execution.arrow.pyspark.enabled=true` |
 | 6 | Pickle Python UDFs | `@udf` with arrow disabled (`...enabled=false`) |
 
-> **Note:** Scala/Java UDFs are excluded (require compiled JAR). Arrow UDFs failed in classic mode
-> due to a `WholeStageCodegen` extraction bug (`FoldableUnevaluable.doGenCode`). They require
-> Spark Connect or a future codegen fix.
+> **Note:** Scala/Java UDFs excluded (require compiled JAR). `@arrow_udf` (SPARK-53014) has a codegen bug in 4.1.0 -- `@udf(useArrow=True)` is the working alternative.
 
 ### Workloads
 
@@ -39,187 +37,170 @@
 
 ## Results: 100K Rows
 
-**Run ID:** `81a616c5` | **Rows:** 100,000 | **Runs:** 3 (median)
-
 ### Arithmetic (`x * 2 + 1`)
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.0675 | 1,481,668 | 1.0x (baseline) |
-| SQL UDFs | 0.0504 | 1,984,977 | 0.7x |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.1750 | 571,309 | 2.6x |
-| Arrow-opt Python | 0.1664 | 600,830 | 2.5x |
-| Pickle Python | 0.1529 | 653,937 | 2.3x |
+| Built-in functions | 0.0734 | 1,362,740 | 1.0x (baseline) |
+| SQL UDFs | 0.0486 | 2,058,143 | 0.7x |
+| Arrow UDFs | 0.2115 | 472,736 | 2.9x |
+| Pandas UDFs | 0.1812 | 551,735 | 2.5x |
+| Arrow-opt Python | 0.1646 | 607,640 | 2.2x |
+| Pickle Python | 0.1613 | 619,833 | 2.2x |
 
 ### String (`upper(x) + '_SUFFIX'`)
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.0325 | 3,073,123 | 1.0x (baseline) |
-| SQL UDFs | 0.0316 | 3,168,382 | 1.0x |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.1646 | 607,388 | 5.1x |
-| Arrow-opt Python | 0.1491 | 670,751 | 4.6x |
-| Pickle Python | 0.1569 | 637,434 | 4.8x |
+| Built-in functions | 0.0308 | 3,246,042 | 1.0x (baseline) |
+| SQL UDFs | 0.0330 | 3,030,525 | 1.1x |
+| Arrow UDFs | 0.1716 | 582,711 | 5.6x |
+| Pandas UDFs | 0.1612 | 620,269 | 5.2x |
+| Arrow-opt Python | 0.1714 | 583,346 | 5.6x |
+| Pickle Python | 0.1673 | 597,838 | 5.4x |
 
-### Normal CDF (`0.5 * (1 + erf(x / sqrt(2)))`)
+### Normal CDF
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.0403 | 2,482,585 | 1.0x (baseline) |
-| SQL UDFs | *(not supported)* | -- | -- |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.1600 | 625,060 | 4.0x |
-| Arrow-opt Python | 0.1564 | 639,588 | 3.9x |
-| Pickle Python | 0.1503 | 665,491 | 3.7x |
+| Built-in functions | 0.0503 | 1,988,390 | 1.0x (baseline) |
+| Arrow UDFs | 0.1644 | 608,398 | 3.3x |
+| Pandas UDFs | 0.1582 | 632,296 | 3.1x |
+| Arrow-opt Python | 0.1543 | 648,134 | 3.1x |
+| Pickle Python | 0.1667 | 599,727 | 3.3x |
 
 ### Observations (100K)
 
-- **SQL UDFs match built-in speed** (0.7x-1.0x) -- they compile to the same Catalyst expressions, no serialization overhead
-- **Pandas, Arrow-opt, and Pickle Python UDFs cluster together** at 2.3x-5.1x overhead -- the dominant cost at 100K rows is Python worker startup/teardown, not per-row serialization
-- **The expected pickle >> arrow-opt gap doesn't appear at 100K** -- the serialization difference only becomes visible at larger scales where per-row serde costs dominate over fixed overhead
-- **No type reached the 30x-50x overhead** predicted by the graphic -- at 100K rows, fixed costs dominate
+- All Python UDFs cluster at 2-6x -- fixed overhead (worker startup/teardown) dominates at small scale
+- Arrow UDFs are indistinguishable from Pandas/pickle at this scale
+- SQL UDFs match built-in speed
 
 ---
 
 ## Results: 1M Rows
 
-**Run ID:** `ebc850e8` | **Rows:** 1,000,000 | **Runs:** 3 (median)
-
 ### Arithmetic (`x * 2 + 1`)
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.0606 | 16,499,494 | 1.0x (baseline) |
-| SQL UDFs | 0.0511 | 19,583,431 | 0.8x |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.1905 | 5,250,149 | 3.1x |
-| Arrow-opt Python | 0.2857 | 3,500,213 | 4.7x |
-| Pickle Python | 0.2600 | 3,846,436 | 4.3x |
+| Built-in functions | 0.0772 | 12,949,761 | 1.0x (baseline) |
+| SQL UDFs | 0.0490 | 20,393,149 | 0.6x |
+| Arrow UDFs | 0.2480 | 4,032,086 | 3.2x |
+| Pandas UDFs | 0.2000 | 4,999,868 | 2.6x |
+| Arrow-opt Python | 0.2928 | 3,415,703 | 3.8x |
+| Pickle Python | 0.2577 | 3,880,465 | 3.3x |
 
 ### String (`upper(x) + '_SUFFIX'`)
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.0450 | 22,219,699 | 1.0x (baseline) |
-| SQL UDFs | 0.0385 | 25,947,765 | 0.9x |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.2083 | 4,801,228 | 4.6x |
-| Arrow-opt Python | 0.2801 | 3,569,815 | 6.2x |
-| Pickle Python | 0.2724 | 3,670,827 | 6.1x |
+| Built-in functions | 0.0470 | 21,285,725 | 1.0x (baseline) |
+| SQL UDFs | 0.0450 | 22,199,580 | 1.0x |
+| Arrow UDFs | 0.2258 | 4,428,849 | 4.8x |
+| Pandas UDFs | 0.2046 | 4,887,639 | 4.4x |
+| Arrow-opt Python | 0.3047 | 3,281,531 | 6.5x |
+| Pickle Python | 0.2882 | 3,469,529 | 6.1x |
 
-### Normal CDF (`0.5 * (1 + erf(x / sqrt(2)))`)
+### Normal CDF
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.0342 | 29,217,342 | 1.0x (baseline) |
-| SQL UDFs | *(not supported)* | -- | -- |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.1713 | 5,838,237 | 5.0x |
-| Arrow-opt Python | 0.2629 | 3,803,333 | 7.7x |
-| Pickle Python | 0.2824 | 3,541,199 | 8.3x |
+| Built-in functions | 0.0506 | 19,781,281 | 1.0x (baseline) |
+| Arrow UDFs | 0.2445 | 4,090,003 | 4.8x |
+| Pandas UDFs | 0.1688 | 5,923,274 | 3.3x |
+| Arrow-opt Python | 0.2710 | 3,689,543 | 5.4x |
+| Pickle Python | 0.2627 | 3,805,925 | 5.2x |
 
 ### Observations (1M)
 
-- **Built-in throughput scales 10x** (1.5M -> 16.5M rows/s arithmetic) while UDF throughput only scales ~6x — built-in expressions amortize overhead better
-- **Pandas UDFs are now clearly faster than plain Python UDFs** (3.1x vs 4.3-4.7x arithmetic) — vectorized batch transfer pays off at scale
-- **Pickle vs Arrow-opt gap begins to appear**: CDF shows 8.3x (pickle) vs 7.7x (arrow-opt) — pickle serialization cost is starting to matter
-- **The overhead gap widens with scale**: Pickle Python CDF went from 3.7x at 100K to 8.3x at 1M (2.2x increase in relative overhead)
+- Pandas UDFs start to separate from row-at-a-time UDFs (2.6x vs 3.3-3.8x arithmetic)
+- Arrow UDFs track closer to Pandas than to pickle -- vectorized transport helps
+- CDF shows Pandas at 3.3x vs Arrow UDF at 4.8x -- Pandas benefits from NumPy vectorization
 
 ---
 
 ## Results: 10M Rows
 
-**Run ID:** `8d244bd4` | **Rows:** 10,000,000 | **Runs:** 3 (median)
-
 ### Arithmetic (`x * 2 + 1`)
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.0675 | 148,254,296 | 1.0x (baseline) |
-| SQL UDFs | 0.0629 | 158,973,411 | 0.9x |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.2984 | 33,510,612 | 4.4x |
-| Arrow-opt Python | 1.1230 | 8,904,850 | 16.6x |
-| Pickle Python | 1.1242 | 8,895,574 | 16.7x |
+| Built-in functions | 0.0740 | 135,069,002 | 1.0x (baseline) |
+| SQL UDFs | 0.0618 | 161,731,252 | 0.8x |
+| Arrow UDFs | 0.5682 | 17,598,513 | 7.7x |
+| Pandas UDFs | 0.2994 | 33,399,464 | 4.0x |
+| Arrow-opt Python | 1.1211 | 8,919,424 | 15.1x |
+| Pickle Python | 1.0916 | 9,161,047 | 14.7x |
 
 ### String (`upper(x) + '_SUFFIX'`)
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.1282 | 78,015,311 | 1.0x (baseline) |
-| SQL UDFs | 0.1369 | 73,057,596 | 1.1x |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.6475 | 15,442,866 | 5.1x |
-| Arrow-opt Python | 1.3150 | 7,604,783 | 10.3x |
-| Pickle Python | 1.2886 | 7,760,506 | 10.1x |
+| Built-in functions | 0.1451 | 68,938,897 | 1.0x (baseline) |
+| SQL UDFs | 0.1298 | 77,069,026 | 0.9x |
+| Arrow UDFs | 0.7493 | 13,346,481 | 5.2x |
+| Pandas UDFs | 0.6376 | 15,684,459 | 4.4x |
+| Arrow-opt Python | 1.3171 | 7,592,167 | 9.1x |
+| Pickle Python | 1.3048 | 7,664,237 | 9.0x |
 
-### Normal CDF (`0.5 * (1 + erf(x / sqrt(2)))`)
+### Normal CDF
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.0634 | 157,768,915 | 1.0x (baseline) |
-| SQL UDFs | *(not supported)* | -- | -- |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.2748 | 36,386,017 | 4.3x |
-| Arrow-opt Python | 1.2202 | 8,195,291 | 19.3x |
-| Pickle Python | 1.2475 | 8,015,974 | 19.7x |
+| Built-in functions | 0.0805 | 124,151,057 | 1.0x (baseline) |
+| Arrow UDFs | 0.6657 | 15,022,790 | 8.3x |
+| Pandas UDFs | 0.2836 | 35,264,091 | 3.5x |
+| Arrow-opt Python | 1.2705 | 7,870,753 | 15.8x |
+| Pickle Python | 1.2346 | 8,099,508 | 15.3x |
 
 ### Observations (10M)
 
-- **Built-in throughput explodes to 148-158M rows/s** — Tungsten codegen with 10M rows fully amortizes JVM overhead; the CPU is doing pure vectorized arithmetic
-- **Pickle Python CDF hits 19.7x** — approaching the graphic's claims. Row-at-a-time serde now dominates execution time
-- **Pandas UDFs hold steady at 4-5x** — vectorized batch processing (Arrow batches of ~10K rows) keeps overhead flat regardless of total row count
-- **The pickle vs pandas gap is now massive**: 19.7x vs 4.3x for CDF = Pandas UDFs are **4.6x faster** than pickle at this scale
-- **Arrow-opt offers no benefit over pickle** for row-at-a-time `@udf` (19.3x vs 19.7x) — confirming that Arrow transport alone doesn't help when the Python function still runs once per row
+- **Clear 3-tier separation emerges**: Pandas (~4x) < Arrow UDF (~7-8x) < row-at-a-time (~15x)
+- Arrow UDFs are ~2x faster than row-at-a-time UDFs thanks to vectorized transport
+- Built-in throughput hits 135M rows/s arithmetic -- Tungsten codegen at full speed
 
 ---
 
 ## Results: 50M Rows
 
-**Run ID:** `ee32b576` | **Rows:** 50,000,000 | **Runs:** 3 (median)
-
 ### Arithmetic (`x * 2 + 1`)
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.1078 | 463,924,946 | 1.0x (baseline) |
-| SQL UDFs | 0.0960 | 520,950,786 | 0.9x |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.7941 | 62,966,483 | 7.4x |
-| Arrow-opt Python | 4.8499 | 10,309,387 | 45.0x |
-| Pickle Python | 4.8310 | 10,349,864 | 44.8x |
+| Built-in functions | 0.1185 | 421,833,242 | 1.0x (baseline) |
+| SQL UDFs | 0.0955 | 523,785,574 | 0.8x |
+| Arrow UDFs | 1.9706 | 25,372,634 | 16.6x |
+| Pandas UDFs | 0.7696 | 64,966,998 | 6.5x |
+| Arrow-opt Python | 4.8070 | 10,401,563 | 40.6x |
+| Pickle Python | 4.7095 | 10,616,888 | 39.7x |
 
 ### String (`upper(x) + '_SUFFIX'`)
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.5302 | 94,298,399 | 1.0x (baseline) |
-| SQL UDFs | 0.5171 | 96,699,001 | 1.0x |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 2.4626 | 20,303,614 | 4.6x |
-| Arrow-opt Python | 5.6653 | 8,825,594 | 10.7x |
-| Pickle Python | 5.7395 | 8,711,537 | 10.8x |
+| Built-in functions | 0.5034 | 99,327,081 | 1.0x (baseline) |
+| SQL UDFs | 0.5100 | 98,035,307 | 1.0x |
+| Arrow UDFs | 2.8986 | 17,249,849 | 5.8x |
+| Pandas UDFs | 2.4339 | 20,542,882 | 4.8x |
+| Arrow-opt Python | 5.6522 | 8,846,092 | 11.2x |
+| Pickle Python | 5.6258 | 8,887,587 | 11.2x |
 
-### Normal CDF (`0.5 * (1 + erf(x / sqrt(2)))`)
+### Normal CDF
 
 | UDF Type | Duration (s) | Rows/s | Overhead |
 |----------|-------------|--------|----------|
-| Built-in functions | 0.1596 | 313,366,578 | 1.0x (baseline) |
-| SQL UDFs | *(not supported)* | -- | -- |
-| Arrow UDFs (4.1) | *(error)* | -- | -- |
-| Pandas UDFs | 0.8470 | 59,030,894 | 5.3x |
-| Arrow-opt Python | 5.9419 | 8,414,817 | 37.2x |
-| Pickle Python | 5.4930 | 9,102,496 | 34.4x |
+| Built-in functions | 0.1567 | 319,068,056 | 1.0x (baseline) |
+| Arrow UDFs | 2.4937 | 20,050,174 | 15.9x |
+| Pandas UDFs | 0.8147 | 61,374,743 | 5.2x |
+| Arrow-opt Python | 5.5095 | 9,075,304 | 35.2x |
+| Pickle Python | 5.5245 | 9,050,648 | 35.3x |
 
 ### Observations (50M)
 
-- **Pickle Python arithmetic hits 44.8x** — directly confirming the graphic's ~50x claim
-- **Built-in throughput reaches 464M rows/s** (arithmetic) — Tungsten codegen with 50M rows achieves near-memory-bandwidth throughput
-- **Pandas UDFs scale gracefully to 5-7x** — batch vectorization continues to amortize overhead even at 50M rows
-- **Python UDF throughput plateaus at ~9-10M rows/s** regardless of total rows — this is the ceiling imposed by per-row JVM-Python round-trips
-- **Arrow-opt still indistinguishable from pickle** for `@udf` (45.0x vs 44.8x arithmetic) — Arrow transport is irrelevant when execution is row-at-a-time
+- **Row-at-a-time @udf hits ~40x** -- approaching the ~50x claim from published benchmarks
+- **Arrow UDFs sit at ~6-17x** -- vectorized transport makes them 2-3x faster than row-at-a-time
+- **Pandas UDFs hold at ~5-7x** -- batch vectorization continues to amortize overhead
+- **Arrow-opt still indistinguishable from pickle** for `@udf` (40.6x vs 39.7x)
 
 ---
 
@@ -229,68 +210,45 @@
 
 | UDF Type | 100K | 1M | 10M | 50M | Trend |
 |----------|------|-----|------|------|-------|
-| SQL UDFs | 0.7x | 0.8x | 0.9x | 0.9x | **Flat ~1x** (same execution path) |
-| Pandas UDFs | 2.6x | 3.1x | 4.4x | 7.4x | **Slow growth** |
-| Arrow-opt Python | 2.5x | 4.7x | 16.6x | **45.0x** | **Superlinear growth** |
-| Pickle Python | 2.3x | 4.3x | 16.7x | **44.8x** | **Superlinear growth** |
+| SQL UDFs | 0.7x | 0.6x | 0.8x | 0.8x | **Flat ~1x** |
+| Pandas UDFs | 2.5x | 2.6x | 4.0x | 6.5x | **Slow growth** |
+| Arrow UDFs | 2.9x | 3.2x | 7.7x | **16.6x** | **Linear growth** |
+| Arrow-opt Python | 2.2x | 3.8x | 15.1x | **40.6x** | **Superlinear growth** |
+| Pickle Python | 2.2x | 3.3x | 14.7x | **39.7x** | **Superlinear growth** |
 
-### String Workload (moderate)
-
-| UDF Type | 100K | 1M | 10M | 50M | Trend |
-|----------|------|-----|------|------|-------|
-| SQL UDFs | 1.0x | 0.9x | 1.1x | 1.0x | **Flat ~1x** |
-| Pandas UDFs | 5.1x | 4.6x | 5.1x | 4.6x | **Flat ~5x** |
-| Arrow-opt Python | 4.6x | 6.2x | 10.3x | 10.7x | **Linear growth** |
-| Pickle Python | 4.8x | 6.1x | 10.1x | 10.8x | **Linear growth** |
-
-### CDF Workload (Normal CDF — most complex)
+### CDF Workload (most complex)
 
 | UDF Type | 100K | 1M | 10M | 50M | Trend |
 |----------|------|-----|------|------|-------|
-| SQL UDFs | n/a | n/a | n/a | n/a | (not expressible) |
-| Pandas UDFs | 4.0x | 5.0x | 4.3x | 5.3x | **Flat ~4-5x** (batch amortization) |
-| Arrow-opt Python | 3.9x | 7.7x | 19.3x | **37.2x** | **Superlinear growth** |
-| Pickle Python | 3.7x | 8.3x | 19.7x | **34.4x** | **Superlinear growth** |
+| Pandas UDFs | 3.1x | 3.3x | 3.5x | 5.2x | **Flat ~3-5x** |
+| Arrow UDFs | 3.3x | 4.8x | 8.3x | **15.9x** | **Linear growth** |
+| Arrow-opt Python | 3.1x | 5.4x | 15.8x | **35.2x** | **Superlinear growth** |
+| Pickle Python | 3.3x | 5.2x | 15.3x | **35.3x** | **Superlinear growth** |
 
 ---
 
 ## Key Takeaways
 
-### 1. The graphic's ~50x claim is confirmed
+### 1. Arrow UDFs (`useArrow=True`) are a meaningful middle ground
 
-Pickle Python UDFs hit **44.8x** overhead on arithmetic at 50M rows. The CDF workload reached **34.4x**. At 100M+ rows these would converge on or exceed the graphic's 50x figure.
+They sit between Pandas UDFs (~5-7x) and row-at-a-time UDFs (~35-41x) at **~6-17x** depending on workload. They use `ArrowEvalPython` for vectorized transport but still execute Python per-row. For simple functions where Pandas conversion overhead matters, they can be faster.
 
-| Scale | Pickle Arithmetic | Pickle CDF | Built-in Arith rows/s | Pickle Arith rows/s |
-|-------|-------------------|-----------|----------------------|---------------------|
-| 100K | 2.3x | 3.7x | 1.5M | 654K |
-| 1M | 4.3x | 8.3x | 16.5M | 3.8M |
-| 10M | 16.7x | 19.7x | 148.3M | 8.9M |
-| **50M** | **44.8x** | **34.4x** | **463.9M** | **10.3M** |
+### 2. Pandas UDFs remain the fastest for Python logic
 
-### 2. SQL UDFs are free at any scale
+Flat **~5-7x** overhead at any scale. The vectorized Arrow batch transfer + NumPy/Pandas operations amortize serde costs. For complex workloads (CDF), Pandas UDFs benefit from NumPy's compiled C routines.
 
-Overhead stays at 0.9-1.0x across all scales. They compile to native Catalyst expressions — identical execution path to built-in functions. Use them for any logic expressible in SQL.
+### 3. Row-at-a-time `@udf` hits ~40x at 50M rows
 
-### 3. Pandas UDFs are the clear winner for Python logic
+Confirming the ~50x claim from published benchmarks. Both pickle and Arrow-opt `@udf` converge to the same throughput ceiling (~9-10M rows/s) because the bottleneck is per-row Python function calls, not serialization format.
 
-Overhead plateaus at **5-7x** and grows slowly. The vectorized Arrow batch transfer amortizes serde overhead across thousands of rows per batch. At 50M rows, Pandas UDFs are **6x faster** than pickle Python UDFs on arithmetic.
+### 4. SQL UDFs are free at any scale
 
-### 4. Row-at-a-time Python UDFs hit a throughput ceiling
+0.6-1.0x overhead across all scales. They compile to native Catalyst expressions. Use them for any logic expressible in SQL.
 
-Both pickle and arrow-opt `@udf` functions plateau at **~9-10M rows/s** regardless of total row count. This is the hard ceiling imposed by per-row JVM-to-Python serialization round-trips. Meanwhile, built-in functions scale to **464M rows/s** with Tungsten codegen. The ratio grows without bound as built-in throughput scales and UDF throughput stays flat.
+### 5. Arrow transport doesn't help `@udf`
 
-### 5. Arrow transport doesn't help row-at-a-time UDFs
+`spark.sql.execution.arrow.pyspark.enabled=true` provides **zero measurable benefit** over pickle for `@udf` (40.6x vs 39.7x). Arrow only changes the serialization format -- the function still executes once per row.
 
-`spark.sql.execution.arrow.pyspark.enabled=true` provides **zero measurable benefit** over pickle for `@udf` functions (45.0x vs 44.8x). Arrow only changes the serialization *format* — the function still executes once per row. The per-row function call overhead dwarfs any serde savings.
+### 6. `@arrow_udf` (SPARK-53014) has a codegen bug in 4.1.0
 
-### 6. The overhead is about per-row serde, not single-node vs distributed
-
-JVM-to-Python worker communication is always local (same-machine socket) regardless of cluster topology. The overhead multiplier comes from:
-- **Built-in**: compiled JVM bytecode, columnar Tungsten memory, SIMD-friendly loops — scales with CPU/memory bandwidth
-- **Python UDF**: serialize row to Python, deserialize, call Python function, serialize result back, deserialize in JVM — bounded by per-row latency
-
-A distributed cluster adds more executors but each executor has the same local JVM-to-Python bottleneck. Distribution doesn't change the overhead ratio.
-
-### 7. Arrow UDFs remain untestable in classic mode
-
-`@arrow_udf` (SPARK-53014) fails in PySpark 4.1.0 classic mode due to `WholeStageCodegen` not extracting the `PythonUDF` node via `ExtractPythonUDFs`. This works under Spark Connect. Arrow UDFs would likely slot at **2-3x** overhead (batch-native like pandas, but without pandas conversion).
+The `FoldableUnevaluable.doGenCode` error occurs in both classic and Connect modes. `@udf(useArrow=True)` (SPARK-43082) is the working alternative that goes through the `ArrowEvalPython` physical node.

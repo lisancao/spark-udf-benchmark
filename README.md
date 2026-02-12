@@ -1,6 +1,6 @@
 # Spark UDF Performance Benchmark
 
-Reproducible benchmark comparing the overhead of 6 PySpark UDF types across 3 workload complexity tiers.
+Reproducible benchmark comparing the overhead of 6 PySpark UDF types across 3 workload complexity tiers, running on Spark Connect.
 
 ## Performance Hierarchy
 
@@ -17,12 +17,13 @@ Reproducible benchmark comparing the overhead of 6 PySpark UDF types across 3 wo
 | UDF Type | Arithmetic | String | CDF | Trend |
 |----------|-----------|--------|-----|-------|
 | Built-in functions | 1.0x | 1.0x | 1.0x | Baseline |
-| SQL UDFs | 0.9x | 1.0x | n/a | Same as built-in |
-| Pandas UDFs | 7.4x | 4.6x | 5.3x | Flat ~5-7x |
-| Arrow-opt Python | **45.0x** | 10.7x | **37.2x** | Superlinear growth |
-| Pickle Python | **44.8x** | 10.8x | **34.4x** | Superlinear growth |
+| SQL UDFs | 0.8x | 1.0x | n/a | Same as built-in |
+| Pandas UDFs | 6.5x | 4.8x | 5.2x | Flat ~5-7x |
+| Arrow UDFs | **16.6x** | 5.8x | **15.9x** | Between Pandas and row-at-a-time |
+| Arrow-opt Python | **40.6x** | 11.2x | **35.2x** | Superlinear growth |
+| Pickle Python | **39.7x** | 11.2x | **35.3x** | Superlinear growth |
 
-> Pickle Python UDFs hit **44.8x** overhead at 50M rows, confirming the ~50x claim from published benchmarks.
+> Row-at-a-time `@udf` hits **~40x** overhead at 50M rows. Arrow UDFs (`useArrow=True`) cut this roughly in half by using vectorized transport, but Pandas UDFs remain fastest for Python at ~5-7x.
 
 ## Overhead Scaling (100K to 50M Rows)
 
@@ -76,12 +77,12 @@ PYSPARK_PYTHON=python3 PYTHONPATH=src python -m spark_udf_benchmark \
 |---|------|---------------|----------------|
 | 1 | Built-in functions | `pyspark.sql.functions` | 1.0x (baseline) |
 | 2 | SQL UDFs | `CREATE TEMPORARY FUNCTION` | ~1x |
-| 3 | Arrow UDFs | `@arrow_udf` (SPARK-53014) | Error in classic mode |
+| 3 | Arrow UDFs | `@udf(useArrow=True)` (SPARK-43082) | ~6-17x |
 | 4 | Pandas UDFs | `@pandas_udf` | ~5-7x |
-| 5 | Arrow-opt Python | `@udf` + `arrow.pyspark.enabled=true` | ~37-45x |
-| 6 | Pickle Python | `@udf` + `arrow.pyspark.enabled=false` | ~35-45x |
+| 5 | Arrow-opt Python | `@udf` + `arrow.pyspark.enabled=true` | ~35-41x |
+| 6 | Pickle Python | `@udf` + `arrow.pyspark.enabled=false` | ~35-40x |
 
-> Scala/Java UDFs excluded (require compiled JAR). Arrow UDFs require Spark Connect.
+> Scala/Java UDFs excluded (require compiled JAR). Uses Spark Connect (`remote("local[*]")`) for all benchmarks.
 
 ## Workloads
 
@@ -93,6 +94,7 @@ PYSPARK_PYTHON=python3 PYTHONPATH=src python -m spark_udf_benchmark \
 
 ## Methodology
 
+- All benchmarks run via Spark Connect (`SparkSession.builder.remote("local[*]")`)
 - Each UDF applied via `df.withColumn("result", udf_expr)` then `.agg(F.count("result")).collect()` forces materialization (prevents Catalyst column pruning)
 - 1 warmup run (discarded), 3 timed runs, report median
 - Overhead = `median_duration / builtin_median_duration` per workload
@@ -102,9 +104,10 @@ PYSPARK_PYTHON=python3 PYTHONPATH=src python -m spark_udf_benchmark \
 
 1. **SQL UDFs are free** -- they compile to Catalyst expressions, same path as built-in
 2. **Pandas UDFs plateau at ~5-7x** -- vectorized Arrow batch transfer amortizes serde
-3. **Row-at-a-time `@udf` hits ~45x at 50M rows** -- per-row JVM-Python serde dominates
-4. **Arrow transport doesn't help `@udf`** -- changes format, not execution model (still row-at-a-time)
-5. **The overhead is about per-row serde, not network** -- JVM-Python is always local socket
+3. **Arrow UDFs (`useArrow=True`) hit ~6-17x** -- vectorized transport via `ArrowEvalPython`, but still per-row Python execution
+4. **Row-at-a-time `@udf` hits ~40x at 50M rows** -- per-row JVM-Python serde dominates
+5. **Arrow transport doesn't help `@udf`** -- changes format, not execution model (still row-at-a-time)
+6. **`@arrow_udf` (SPARK-53014) has a codegen bug** -- `FoldableUnevaluable.doGenCode` fails in both classic and Connect modes in Spark 4.1.0; `@udf(useArrow=True)` is the working alternative
 
 ## Project Structure
 
@@ -116,7 +119,7 @@ spark-udf-benchmark/
 │   ├── benchmark.py         # UdfPipelineBenchmark class
 │   └── result.py            # UdfBenchmarkResult dataclass
 ├── tests/
-│   ├── conftest.py          # Spark session fixture
+│   ├── conftest.py          # Spark Connect session fixture
 │   └── test_benchmark.py    # 20 smoke tests (1K rows)
 ├── graphics/                # SVG visualizations
 │   ├── 01_overhead_at_50m.svg
@@ -145,3 +148,4 @@ spark-udf-benchmark/
 | PyArrow | 17-18 |
 | pandas | 2.x |
 | scipy | 1.12+ |
+| Mode | Spark Connect |

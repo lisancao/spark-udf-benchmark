@@ -1,152 +1,182 @@
 {
   "metadata": {
-    "run_id": "ebc850e8",
+    "run_id": "962951c9",
     "benchmark_type": "udf_pipeline",
     "row_count": 1000000,
     "warmup_runs": 1,
     "benchmark_runs": 3,
-    "timestamp": "2026-02-12T19:56:13.669657+00:00"
+    "timestamp": "2026-02-12T20:53:40.693709+00:00"
   },
   "results": {
     "builtin_arithmetic": {
       "udf_type": "builtin",
       "workload": "arithmetic",
       "row_count": 1000000,
-      "duration_seconds": 0.060608,
-      "rows_per_second": 16499493.52,
+      "duration_seconds": 0.077221,
+      "rows_per_second": 12949761.4,
       "relative_overhead": 1.0,
-      "timestamp": "2026-02-12T19:56:01.690579+00:00",
-      "run_id": "ebc850e8"
+      "timestamp": "2026-02-12T20:53:26.086306+00:00",
+      "run_id": "962951c9"
     },
     "sql_udf_arithmetic": {
       "udf_type": "sql_udf",
       "workload": "arithmetic",
       "row_count": 1000000,
-      "duration_seconds": 0.051064,
-      "rows_per_second": 19583430.66,
-      "relative_overhead": 0.84,
-      "timestamp": "2026-02-12T19:56:01.974659+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.049036,
+      "rows_per_second": 20393149.33,
+      "relative_overhead": 0.64,
+      "timestamp": "2026-02-12T20:53:26.428991+00:00",
+      "run_id": "962951c9"
+    },
+    "arrow_udf_arithmetic": {
+      "udf_type": "arrow_udf",
+      "workload": "arithmetic",
+      "row_count": 1000000,
+      "duration_seconds": 0.248011,
+      "rows_per_second": 4032086.15,
+      "relative_overhead": 3.21,
+      "timestamp": "2026-02-12T20:53:28.277143+00:00",
+      "run_id": "962951c9"
     },
     "pandas_udf_arithmetic": {
       "udf_type": "pandas_udf",
       "workload": "arithmetic",
       "row_count": 1000000,
-      "duration_seconds": 0.190471,
-      "rows_per_second": 5250149.13,
-      "relative_overhead": 3.14,
-      "timestamp": "2026-02-12T19:56:03.763287+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.200005,
+      "rows_per_second": 4999868.0,
+      "relative_overhead": 2.59,
+      "timestamp": "2026-02-12T20:53:29.060137+00:00",
+      "run_id": "962951c9"
     },
     "arrow_opt_python_arithmetic": {
       "udf_type": "arrow_opt_python",
       "workload": "arithmetic",
       "row_count": 1000000,
-      "duration_seconds": 0.285697,
-      "rows_per_second": 3500212.88,
-      "relative_overhead": 4.71,
-      "timestamp": "2026-02-12T19:56:04.965442+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.292765,
+      "rows_per_second": 3415703.28,
+      "relative_overhead": 3.79,
+      "timestamp": "2026-02-12T20:53:30.249288+00:00",
+      "run_id": "962951c9"
     },
     "pickle_python_arithmetic": {
       "udf_type": "pickle_python",
       "workload": "arithmetic",
       "row_count": 1000000,
-      "duration_seconds": 0.259981,
-      "rows_per_second": 3846435.6,
-      "relative_overhead": 4.29,
-      "timestamp": "2026-02-12T19:56:06.018364+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.257701,
+      "rows_per_second": 3880464.93,
+      "relative_overhead": 3.34,
+      "timestamp": "2026-02-12T20:53:31.336348+00:00",
+      "run_id": "962951c9"
     },
     "builtin_string": {
       "udf_type": "builtin",
       "workload": "string",
       "row_count": 1000000,
-      "duration_seconds": 0.045005,
-      "rows_per_second": 22219698.56,
+      "duration_seconds": 0.04698,
+      "rows_per_second": 21285724.6,
       "relative_overhead": 1.0,
-      "timestamp": "2026-02-12T19:56:06.751307+00:00",
-      "run_id": "ebc850e8"
+      "timestamp": "2026-02-12T20:53:32.031584+00:00",
+      "run_id": "962951c9"
     },
     "sql_udf_string": {
       "udf_type": "sql_udf",
       "workload": "string",
       "row_count": 1000000,
-      "duration_seconds": 0.038539,
-      "rows_per_second": 25947764.81,
-      "relative_overhead": 0.86,
-      "timestamp": "2026-02-12T19:56:06.943753+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.045046,
+      "rows_per_second": 22199580.13,
+      "relative_overhead": 0.96,
+      "timestamp": "2026-02-12T20:53:32.256459+00:00",
+      "run_id": "962951c9"
+    },
+    "arrow_udf_string": {
+      "udf_type": "arrow_udf",
+      "workload": "string",
+      "row_count": 1000000,
+      "duration_seconds": 0.225792,
+      "rows_per_second": 4428848.54,
+      "relative_overhead": 4.81,
+      "timestamp": "2026-02-12T20:53:33.256819+00:00",
+      "run_id": "962951c9"
     },
     "pandas_udf_string": {
       "udf_type": "pandas_udf",
       "workload": "string",
       "row_count": 1000000,
-      "duration_seconds": 0.20828,
-      "rows_per_second": 4801228.35,
-      "relative_overhead": 4.63,
-      "timestamp": "2026-02-12T19:56:07.929969+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.204598,
+      "rows_per_second": 4887639.26,
+      "relative_overhead": 4.36,
+      "timestamp": "2026-02-12T20:53:34.085679+00:00",
+      "run_id": "962951c9"
     },
     "arrow_opt_python_string": {
       "udf_type": "arrow_opt_python",
       "workload": "string",
       "row_count": 1000000,
-      "duration_seconds": 0.280127,
-      "rows_per_second": 3569815.18,
-      "relative_overhead": 6.22,
-      "timestamp": "2026-02-12T19:56:09.096855+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.304736,
+      "rows_per_second": 3281531.47,
+      "relative_overhead": 6.49,
+      "timestamp": "2026-02-12T20:53:35.350828+00:00",
+      "run_id": "962951c9"
     },
     "pickle_python_string": {
       "udf_type": "pickle_python",
       "workload": "string",
       "row_count": 1000000,
-      "duration_seconds": 0.272418,
-      "rows_per_second": 3670827.1,
-      "relative_overhead": 6.05,
-      "timestamp": "2026-02-12T19:56:10.243880+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.288224,
+      "rows_per_second": 3469528.99,
+      "relative_overhead": 6.14,
+      "timestamp": "2026-02-12T20:53:36.487653+00:00",
+      "run_id": "962951c9"
     },
     "builtin_cdf": {
       "udf_type": "builtin",
       "workload": "cdf",
       "row_count": 1000000,
-      "duration_seconds": 0.034226,
-      "rows_per_second": 29217342.2,
+      "duration_seconds": 0.050553,
+      "rows_per_second": 19781281.14,
       "relative_overhead": 1.0,
-      "timestamp": "2026-02-12T19:56:10.570082+00:00",
-      "run_id": "ebc850e8"
+      "timestamp": "2026-02-12T20:53:36.776300+00:00",
+      "run_id": "962951c9"
+    },
+    "arrow_udf_cdf": {
+      "udf_type": "arrow_udf",
+      "workload": "cdf",
+      "row_count": 1000000,
+      "duration_seconds": 0.244499,
+      "rows_per_second": 4090002.68,
+      "relative_overhead": 4.84,
+      "timestamp": "2026-02-12T20:53:37.732047+00:00",
+      "run_id": "962951c9"
     },
     "pandas_udf_cdf": {
       "udf_type": "pandas_udf",
       "workload": "cdf",
       "row_count": 1000000,
-      "duration_seconds": 0.171285,
-      "rows_per_second": 5838236.99,
-      "relative_overhead": 5.0,
-      "timestamp": "2026-02-12T19:56:11.483373+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.168826,
+      "rows_per_second": 5923273.95,
+      "relative_overhead": 3.34,
+      "timestamp": "2026-02-12T20:53:38.575107+00:00",
+      "run_id": "962951c9"
     },
     "arrow_opt_python_cdf": {
       "udf_type": "arrow_opt_python",
       "workload": "cdf",
       "row_count": 1000000,
-      "duration_seconds": 0.262927,
-      "rows_per_second": 3803333.04,
-      "relative_overhead": 7.68,
-      "timestamp": "2026-02-12T19:56:12.552448+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.271036,
+      "rows_per_second": 3689543.39,
+      "relative_overhead": 5.36,
+      "timestamp": "2026-02-12T20:53:39.642411+00:00",
+      "run_id": "962951c9"
     },
     "pickle_python_cdf": {
       "udf_type": "pickle_python",
       "workload": "cdf",
       "row_count": 1000000,
-      "duration_seconds": 0.28239,
-      "rows_per_second": 3541198.52,
-      "relative_overhead": 8.25,
-      "timestamp": "2026-02-12T19:56:13.666101+00:00",
-      "run_id": "ebc850e8"
+      "duration_seconds": 0.262748,
+      "rows_per_second": 3805924.96,
+      "relative_overhead": 5.2,
+      "timestamp": "2026-02-12T20:53:40.686112+00:00",
+      "run_id": "962951c9"
     }
   }
 }

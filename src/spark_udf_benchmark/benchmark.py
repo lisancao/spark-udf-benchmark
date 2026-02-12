@@ -125,33 +125,32 @@ class UdfPipelineBenchmark:
         )
 
     # ------------------------------------------------------------------
-    # Arrow UDFs (Spark 4.1 — SPARK-53014)
+    # Arrow-optimized UDFs (@udf with useArrow=True, SPARK-43082)
     # ------------------------------------------------------------------
 
     @staticmethod
     def _make_arrow_udfs() -> Dict[str, Callable]:
-        """Create arrow UDFs. Returns dict of workload -> udf."""
-        from pyspark.sql.functions import arrow_udf
+        """Create Arrow-optimized UDFs via useArrow=True.
 
-        @arrow_udf(DoubleType())
+        These go through ArrowEvalPython (vectorized Arrow batches)
+        unlike the config toggle which is still row-at-a-time.
+        """
+        from pyspark.sql.functions import udf
+
+        @udf(DoubleType(), useArrow=True)
         def arrow_arith(x):
-            import pyarrow.compute as pc
-            return pc.add(pc.multiply(x, 2), 1)
+            return float(x) * 2 + 1 if x is not None else None
 
-        @arrow_udf(StringType())
+        @udf(StringType(), useArrow=True)
         def arrow_string(x):
-            import pyarrow.compute as pc
-            upper_x = pc.utf8_upper(x)
-            return pc.binary_join_element_wise("_SUFFIX", upper_x, "")
+            return x.upper() + "_SUFFIX" if x is not None else None
 
-        @arrow_udf(DoubleType())
+        @udf(DoubleType(), useArrow=True)
         def arrow_cdf(x):
-            import pyarrow as pa
-            import numpy as np
-            from scipy.special import erf as _erf
-            arr = x.to_numpy(zero_copy_only=False).astype(np.float64)
-            result = 0.5 * (1.0 + _erf(arr / np.sqrt(2.0)))
-            return pa.array(result)
+            if x is None:
+                return None
+            import math as _math
+            return 0.5 * (1.0 + _math.erf(float(x) / _math.sqrt(2.0)))
 
         return {"arithmetic": arrow_arith, "string": arrow_string, "cdf": arrow_cdf}
 

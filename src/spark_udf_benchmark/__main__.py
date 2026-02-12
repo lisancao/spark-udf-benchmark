@@ -23,6 +23,7 @@ def main() -> int:
     spark = (
         SparkSession.builder
         .appName("UdfBenchmark")
+        .remote("local[*]")
         .config("spark.sql.shuffle.partitions", "10")
         .getOrCreate()
     )
