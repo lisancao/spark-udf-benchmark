@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#E2E8F0" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+    <linearGradient id="g-builtin" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#238636"/><stop offset="100%" stop-color="#2ea043"/>
+    </linearGradient>
+    <linearGradient id="g-sql" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#1f6feb"/><stop offset="100%" stop-color="#388bfd"/>
+    </linearGradient>
+    <linearGradient id="g-pandas" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#d4920b"/><stop offset="100%" stop-color="#e3a917"/>
+    </linearGradient>
+    <linearGradient id="g-arrowopt" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#E25A1C"/><stop offset="100%" stop-color="#F47A3E"/>
+    </linearGradient>
+    <linearGradient id="g-pickle" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#D13913"/><stop offset="100%" stop-color="#E45A3B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="520" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="900" height="4" fill="#E25A1C"/>
+
+  <!-- Title -->
+  <text x="450" y="40" font-size="20" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">UDF Overhead at 50 Million Rows</text>
+  <text x="450" y="60" font-size="12" fill="#718096" text-anchor="middle">Relative overhead vs built-in functions (Spark 4.1.0, local[2])</text>
+
+  <!-- Chart area -->
+  <g transform="translate(180, 80)">
+    <!-- Grid lines -->
+    <line x1="0" y1="0" x2="0" y2="390" stroke="#E2E8F0" stroke-width="1"/>
+    <!-- X axis ticks: 0, 10, 20, 30, 40, 50 -->
+    <line x1="0" y1="390" x2="660" y2="390" stroke="#CBD5E0" stroke-width="1"/>
+    <g font-size="11" fill="#718096" text-anchor="middle">
+      <line x1="0" y1="0" x2="0" y2="395" stroke="#E2E8F0" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <text x="0" y="408">0x</text>
+      <line x1="132" y1="0" x2="132" y2="395" stroke="#E2E8F0" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <text x="132" y="408">10x</text>
+      <line x1="264" y1="0" x2="264" y2="395" stroke="#E2E8F0" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <text x="264" y="408">20x</text>
+      <line x1="396" y1="0" x2="396" y2="395" stroke="#E2E8F0" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <text x="396" y="408">30x</text>
+      <line x1="528" y1="0" x2="528" y2="395" stroke="#E2E8F0" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <text x="528" y="408">40x</text>
+      <line x1="660" y1="0" x2="660" y2="395" stroke="#E2E8F0" stroke-width="0.5" stroke-dasharray="3,3"/>
+      <text x="660" y="408">50x</text>
+    </g>
+
+    <!-- ARITHMETIC WORKLOAD -->
+    <text x="-10" y="-5" font-size="13" fill="#4A5568" font-weight="bold" text-anchor="end">Arithmetic</text>
+    <text x="-10" y="8" font-size="9" fill="#A0AEC0" text-anchor="end">x * 2 + 1</text>
+
+    <!-- Built-in: 1.0x -->
+    <g transform="translate(0, 15)">
+      <rect x="0" y="0" width="13.2" height="18" rx="3" fill="url(#g-builtin)"/>
+      <text x="20" y="13" font-size="10" fill="#238636" font-weight="600">1.0x</text>
+    </g>
+    <!-- SQL: 0.9x -->
+    <g transform="translate(0, 37)">
+      <rect x="0" y="0" width="11.9" height="18" rx="3" fill="url(#g-sql)"/>
+      <text x="20" y="13" font-size="10" fill="#1f6feb" font-weight="600">0.9x</text>
+    </g>
+    <!-- Pandas: 7.4x -->
+    <g transform="translate(0, 59)">
+      <rect x="0" y="0" width="97.4" height="18" rx="3" fill="url(#g-pandas)"/>
+      <text x="104" y="13" font-size="10" fill="#d4920b" font-weight="600">7.4x</text>
+    </g>
+    <!-- Arrow-opt: 45.0x -->
+    <g transform="translate(0, 81)">
+      <rect x="0" y="0" width="594" height="18" rx="3" fill="url(#g-arrowopt)"/>
+      <text x="601" y="13" font-size="10" fill="#E25A1C" font-weight="600">45.0x</text>
+    </g>
+    <!-- Pickle: 44.8x -->
+    <g transform="translate(0, 103)">
+      <rect x="0" y="0" width="591.4" height="18" rx="3" fill="url(#g-pickle)"/>
+      <text x="598" y="13" font-size="10" fill="#D13913" font-weight="600">44.8x</text>
+    </g>
+
+    <!-- STRING WORKLOAD -->
+    <text x="-10" y="148" font-size="13" fill="#4A5568" font-weight="bold" text-anchor="end">String</text>
+    <text x="-10" y="161" font-size="9" fill="#A0AEC0" text-anchor="end">upper + suffix</text>
+
+    <!-- Built-in: 1.0x -->
+    <g transform="translate(0, 168)">
+      <rect x="0" y="0" width="13.2" height="18" rx="3" fill="url(#g-builtin)"/>
+      <text x="20" y="13" font-size="10" fill="#238636" font-weight="600">1.0x</text>
+    </g>
+    <!-- SQL: 1.0x -->
+    <g transform="translate(0, 190)">
+      <rect x="0" y="0" width="12.9" height="18" rx="3" fill="url(#g-sql)"/>
+      <text x="20" y="13" font-size="10" fill="#1f6feb" font-weight="600">1.0x</text>
+    </g>
+    <!-- Pandas: 4.6x -->
+    <g transform="translate(0, 212)">
+      <rect x="0" y="0" width="61.2" height="18" rx="3" fill="url(#g-pandas)"/>
+      <text x="68" y="13" font-size="10" fill="#d4920b" font-weight="600">4.6x</text>
+    </g>
+    <!-- Arrow-opt: 10.7x -->
+    <g transform="translate(0, 234)">
+      <rect x="0" y="0" width="141" height="18" rx="3" fill="url(#g-arrowopt)"/>
+      <text x="148" y="13" font-size="10" fill="#E25A1C" font-weight="600">10.7x</text>
+    </g>
+    <!-- Pickle: 10.8x -->
+    <g transform="translate(0, 256)">
+      <rect x="0" y="0" width="142.6" height="18" rx="3" fill="url(#g-pickle)"/>
+      <text x="150" y="13" font-size="10" fill="#D13913" font-weight="600">10.8x</text>
+    </g>
+
+    <!-- CDF WORKLOAD -->
+    <text x="-10" y="301" font-size="13" fill="#4A5568" font-weight="bold" text-anchor="end">Normal CDF</text>
+    <text x="-10" y="314" font-size="9" fill="#A0AEC0" text-anchor="end">0.5*(1+erf(x/&amp;#8730;2))</text>
+
+    <!-- Built-in: 1.0x -->
+    <g transform="translate(0, 321)">
+      <rect x="0" y="0" width="13.2" height="18" rx="3" fill="url(#g-builtin)"/>
+      <text x="20" y="13" font-size="10" fill="#238636" font-weight="600">1.0x</text>
+    </g>
+    <!-- Pandas: 5.3x -->
+    <g transform="translate(0, 343)">
+      <rect x="0" y="0" width="70" height="18" rx="3" fill="url(#g-pandas)"/>
+      <text x="77" y="13" font-size="10" fill="#d4920b" font-weight="600">5.3x</text>
+    </g>
+    <!-- Arrow-opt: 37.2x -->
+    <g transform="translate(0, 365)">
+      <rect x="0" y="0" width="491" height="18" rx="3" fill="url(#g-arrowopt)"/>
+      <text x="498" y="13" font-size="10" fill="#E25A1C" font-weight="600">37.2x</text>
+    </g>
+    <!-- Pickle: 34.4x -->
+    <g transform="translate(0, 387)">
+      <rect x="0" y="0" width="454.1" height="18" rx="3" fill="url(#g-pickle)"/>
+      <text x="461" y="13" font-size="10" fill="#D13913" font-weight="600">34.4x</text>
+    </g>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(240, 495)" font-size="10">
+    <rect x="0" y="0" width="12" height="12" rx="2" fill="url(#g-builtin)"/>
+    <text x="16" y="10" fill="#4A5568">Built-in</text>
+    <rect x="80" y="0" width="12" height="12" rx="2" fill="url(#g-sql)"/>
+    <text x="96" y="10" fill="#4A5568">SQL UDF</text>
+    <rect x="160" y="0" width="12" height="12" rx="2" fill="url(#g-pandas)"/>
+    <text x="176" y="10" fill="#4A5568">Pandas UDF</text>
+    <rect x="260" y="0" width="12" height="12" rx="2" fill="url(#g-arrowopt)"/>
+    <text x="276" y="10" fill="#4A5568">Arrow-opt @udf</text>
+    <rect x="376" y="0" width="12" height="12" rx="2" fill="url(#g-pickle)"/>
+    <text x="392" y="10" fill="#4A5568">Pickle @udf</text>
+  </g>
+
+  <rect x="0" y="516" width="900" height="4" fill="#E25A1C"/>
+</svg>

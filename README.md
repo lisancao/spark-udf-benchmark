@@ -1,8 +1,18 @@
 # Spark UDF Performance Benchmark
 
-Reproducible benchmark comparing the overhead of 6 PySpark UDF types across 3 workload complexity tiers. Built to independently verify the performance claims in the [Arrow-Python UDF hierarchy graphic](../graphics/03_performance_hierarchy.svg).
+Reproducible benchmark comparing the overhead of 6 PySpark UDF types across 3 workload complexity tiers.
+
+## Performance Hierarchy
+
+<p align="center">
+  <img src="graphics/03_performance_hierarchy.svg" alt="PySpark UDF Performance Hierarchy" width="800"/>
+</p>
 
 ## Results Summary (50M rows, Spark 4.1.0)
+
+<p align="center">
+  <img src="graphics/01_overhead_at_50m.svg" alt="UDF Overhead at 50M Rows" width="800"/>
+</p>
 
 | UDF Type | Arithmetic | String | CDF | Trend |
 |----------|-----------|--------|-----|-------|
@@ -12,7 +22,14 @@ Reproducible benchmark comparing the overhead of 6 PySpark UDF types across 3 wo
 | Arrow-opt Python | **45.0x** | 10.7x | **37.2x** | Superlinear growth |
 | Pickle Python | **44.8x** | 10.8x | **34.4x** | Superlinear growth |
 
-> Pickle Python UDFs hit **44.8x** overhead at 50M rows, confirming the graphic's ~50x claim.
+> Pickle Python UDFs hit **44.8x** overhead at 50M rows, confirming the ~50x claim from published benchmarks.
+
+## Overhead Scaling (100K to 50M Rows)
+
+<p align="center">
+  <img src="graphics/02_overhead_scaling.svg" alt="Overhead Scaling from 100K to 50M Rows" width="800"/>
+</p>
+
 > Full analysis across 100K, 1M, 10M, and 50M rows in [docs/report.md](docs/report.md).
 
 ## Quick Start
@@ -101,6 +118,10 @@ spark-udf-benchmark/
 ├── tests/
 │   ├── conftest.py          # Spark session fixture
 │   └── test_benchmark.py    # 20 smoke tests (1K rows)
+├── graphics/                # SVG visualizations
+│   ├── 01_overhead_at_50m.svg
+│   ├── 02_overhead_scaling.svg
+│   └── 03_performance_hierarchy.svg
 ├── results/                 # Checked-in JSON from our runs
 │   ├── 100k.json
 │   ├── 1m.json

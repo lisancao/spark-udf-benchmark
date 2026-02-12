@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+  <defs>
+    <linearGradient id="fill-pickle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D13913" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#D13913" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="fill-arrowopt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E25A1C" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#E25A1C" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="fill-pandas" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4920b" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#d4920b" stop-opacity="0.02"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="500" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="900" height="4" fill="#E25A1C"/>
+
+  <!-- Title -->
+  <text x="450" y="38" font-size="20" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">Overhead Scaling: 100K to 50M Rows</text>
+  <text x="450" y="56" font-size="12" fill="#718096" text-anchor="middle">Arithmetic workload (x * 2 + 1) -- overhead grows superlinearly for row-at-a-time UDFs</text>
+
+  <!-- Chart area: 700x350, origin at (130, 75) -->
+  <g transform="translate(130, 75)">
+    <!-- Y axis: 0 to 50x, chart height = 350 -->
+    <!-- Y gridlines -->
+    <g stroke="#E2E8F0" stroke-width="0.5" stroke-dasharray="3,3">
+      <line x1="0" y1="350" x2="700" y2="350"/><!-- 0x -->
+      <line x1="0" y1="280" x2="700" y2="280"/><!-- 10x -->
+      <line x1="0" y1="210" x2="700" y2="210"/><!-- 20x -->
+      <line x1="0" y1="140" x2="700" y2="140"/><!-- 30x -->
+      <line x1="0" y1="70" x2="700" y2="70"/><!-- 40x -->
+      <line x1="0" y1="0" x2="700" y2="0"/><!-- 50x -->
+    </g>
+    <!-- Y axis labels -->
+    <g font-size="11" fill="#718096" text-anchor="end">
+      <text x="-8" y="354">0x</text>
+      <text x="-8" y="284">10x</text>
+      <text x="-8" y="214">20x</text>
+      <text x="-8" y="144">30x</text>
+      <text x="-8" y="74">40x</text>
+      <text x="-8" y="4">50x</text>
+    </g>
+
+    <!-- X axis: 4 data points at 100K, 1M, 10M, 50M -->
+    <!-- Positions: x=0 (100K), x=233 (1M), x=467 (10M), x=700 (50M) -->
+    <line x1="0" y1="350" x2="700" y2="350" stroke="#CBD5E0" stroke-width="1"/>
+    <line x1="0" y1="0" x2="0" y2="350" stroke="#CBD5E0" stroke-width="1"/>
+    <g font-size="11" fill="#718096" text-anchor="middle">
+      <text x="0" y="370">100K</text>
+      <text x="233" y="370">1M</text>
+      <text x="467" y="370">10M</text>
+      <text x="700" y="370">50M</text>
+    </g>
+    <text x="350" y="395" font-size="12" fill="#4A5568" text-anchor="middle">Row Count</text>
+    <text x="-55" y="175" font-size="12" fill="#4A5568" text-anchor="middle" transform="rotate(-90, -55, 175)">Overhead (x)</text>
+
+    <!-- Data points (y = 350 - value * 7) -->
+    <!-- 7 pixels per 1x overhead unit, so 50x = 350px -->
+
+    <!-- Pickle Python: 2.27, 4.29, 16.67, 44.82 -->
+    <!-- y: 334.1, 320.0, 233.3, 36.3 -->
+    <polygon points="0,334.1 233,320.0 467,233.3 700,36.3 700,350 467,350 233,350 0,350" fill="url(#fill-pickle)"/>
+    <polyline points="0,334.1 233,320.0 467,233.3 700,36.3" fill="none" stroke="#D13913" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="0" cy="334.1" r="4" fill="#D13913"/>
+    <circle cx="233" cy="320.0" r="4" fill="#D13913"/>
+    <circle cx="467" cy="233.3" r="4" fill="#D13913"/>
+    <circle cx="700" cy="36.3" r="5" fill="#D13913" stroke="#FFFFFF" stroke-width="2"/>
+    <text x="700" y="28" font-size="11" fill="#D13913" text-anchor="middle" font-weight="bold">44.8x</text>
+
+    <!-- Arrow-opt Python: 2.47, 4.71, 16.65, 45.0 -->
+    <!-- y: 332.7, 317.0, 233.5, 35.0 -->
+    <polygon points="0,332.7 233,317.0 467,233.5 700,35.0 700,350 467,350 233,350 0,350" fill="url(#fill-arrowopt)"/>
+    <polyline points="0,332.7 233,317.0 467,233.5 700,35.0" fill="none" stroke="#E25A1C" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="8,4"/>
+    <circle cx="0" cy="332.7" r="4" fill="#E25A1C"/>
+    <circle cx="233" cy="317.0" r="4" fill="#E25A1C"/>
+    <circle cx="467" cy="233.5" r="4" fill="#E25A1C"/>
+    <circle cx="700" cy="35.0" r="5" fill="#E25A1C" stroke="#FFFFFF" stroke-width="2"/>
+    <text x="700" y="54" font-size="11" fill="#E25A1C" text-anchor="end" font-weight="bold">45.0x</text>
+
+    <!-- Pandas UDF: 2.59, 3.14, 4.42, 7.37 -->
+    <!-- y: 331.9, 328.0, 319.1, 298.4 -->
+    <polygon points="0,331.9 233,328.0 467,319.1 700,298.4 700,350 467,350 233,350 0,350" fill="url(#fill-pandas)"/>
+    <polyline points="0,331.9 233,328.0 467,319.1 700,298.4" fill="none" stroke="#d4920b" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="0" cy="331.9" r="4" fill="#d4920b"/>
+    <circle cx="233" cy="328.0" r="4" fill="#d4920b"/>
+    <circle cx="467" cy="319.1" r="4" fill="#d4920b"/>
+    <circle cx="700" cy="298.4" r="5" fill="#d4920b" stroke="#FFFFFF" stroke-width="2"/>
+    <text x="700" y="293" font-size="11" fill="#d4920b" text-anchor="middle" font-weight="bold">7.4x</text>
+
+    <!-- SQL UDF: 0.75, 0.84, 0.93, 0.89 -->
+    <!-- y: 344.8, 344.1, 343.5, 343.8 -->
+    <polyline points="0,344.8 233,344.1 467,343.5 700,343.8" fill="none" stroke="#1f6feb" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="0" cy="344.8" r="3.5" fill="#1f6feb"/>
+    <circle cx="233" cy="344.1" r="3.5" fill="#1f6feb"/>
+    <circle cx="467" cy="343.5" r="3.5" fill="#1f6feb"/>
+    <circle cx="700" cy="343.8" r="4" fill="#1f6feb" stroke="#FFFFFF" stroke-width="1.5"/>
+
+    <!-- Built-in: always 1.0x -->
+    <!-- y: 343.0 -->
+    <polyline points="0,343.0 233,343.0 467,343.0 700,343.0" fill="none" stroke="#238636" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="0" cy="343.0" r="3.5" fill="#238636"/>
+    <circle cx="233" cy="343.0" r="3.5" fill="#238636"/>
+    <circle cx="467" cy="343.0" r="3.5" fill="#238636"/>
+    <circle cx="700" cy="343.0" r="4" fill="#238636" stroke="#FFFFFF" stroke-width="1.5"/>
+
+    <!-- Annotation: "superlinear growth" arrow -->
+    <g transform="translate(530, 130)">
+      <rect x="-5" y="-15" width="135" height="38" rx="4" fill="#FFF5F5" stroke="#D13913" stroke-opacity="0.3"/>
+      <text x="62" y="2" font-size="10" fill="#D13913" text-anchor="middle" font-weight="600">Superlinear growth</text>
+      <text x="62" y="16" font-size="9" fill="#953800" text-anchor="middle">per-row serde dominates</text>
+    </g>
+
+    <!-- Annotation: "flat ~5-7x" for pandas -->
+    <g transform="translate(530, 278)">
+      <rect x="-5" y="-12" width="100" height="22" rx="4" fill="#FFFBEB" stroke="#d4920b" stroke-opacity="0.3"/>
+      <text x="45" y="4" font-size="10" fill="#d4920b" text-anchor="middle" font-weight="600">Flat plateau ~5-7x</text>
+    </g>
+
+    <!-- Annotation: baseline -->
+    <g transform="translate(530, 330)">
+      <text x="0" y="4" font-size="9" fill="#718096">Built-in / SQL (baseline)</text>
+    </g>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(170, 465)" font-size="10">
+    <line x1="0" y1="5" x2="18" y2="5" stroke="#238636" stroke-width="2"/>
+    <circle cx="9" cy="5" r="3" fill="#238636"/>
+    <text x="22" y="9" fill="#4A5568">Built-in</text>
+
+    <line x1="85" y1="5" x2="103" y2="5" stroke="#1f6feb" stroke-width="2"/>
+    <circle cx="94" cy="5" r="3" fill="#1f6feb"/>
+    <text x="107" y="9" fill="#4A5568">SQL UDF</text>
+
+    <line x1="175" y1="5" x2="193" y2="5" stroke="#d4920b" stroke-width="2"/>
+    <circle cx="184" cy="5" r="3" fill="#d4920b"/>
+    <text x="197" y="9" fill="#4A5568">Pandas UDF</text>
+
+    <line x1="290" y1="5" x2="308" y2="5" stroke="#E25A1C" stroke-width="2" stroke-dasharray="8,4"/>
+    <circle cx="299" cy="5" r="3" fill="#E25A1C"/>
+    <text x="312" y="9" fill="#4A5568">Arrow-opt @udf</text>
+
+    <line x1="420" y1="5" x2="438" y2="5" stroke="#D13913" stroke-width="2"/>
+    <circle cx="429" cy="5" r="3" fill="#D13913"/>
+    <text x="442" y="9" fill="#4A5568">Pickle @udf</text>
+  </g>
+
+  <rect x="0" y="496" width="900" height="4" fill="#E25A1C"/>
+</svg>
