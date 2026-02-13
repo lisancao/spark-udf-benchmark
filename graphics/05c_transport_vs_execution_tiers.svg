@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 660" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+  <rect width="960" height="660" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="960" height="4" fill="#E25A1C"/>
+
+  <!-- Title -->
+  <text x="480" y="36" font-size="22" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">The Real Bottleneck: Per-Row Python Function Calls</text>
+  <text x="480" y="56" font-size="13" fill="#718096" text-anchor="middle">Not serialization format. Three performance tiers based on execution model (verified 50M-100M rows).</text>
+
+  <!-- Proportional tier boxes: width proportional to overhead -->
+  <!-- Full width = 880px. Scale relative to max overhead (~49x at 50M) -->
+  <!-- Tier 1: 880px (49x), Tier 2: 373px (21x), Tier 3: 122px (6.8x) -->
+
+  <!-- ═══ TIER 1: Row-at-a-time ═══ -->
+  <rect x="40" y="80" width="880" height="150" rx="10" fill="#FFF5F5" stroke="#FED7D7" stroke-width="1.5"/>
+  <!-- Width represents 49x overhead -->
+  <text x="60" y="106" font-size="15" fill="#D13913" font-weight="bold">TIER 1: Row-at-a-Time Execution</text>
+  <text x="900" y="106" font-size="28" fill="#D13913" text-anchor="end" font-weight="bold">~49-69x</text>
+
+  <!-- Two items in this tier -->
+  <g transform="translate(60, 120)">
+    <rect x="0" y="0" width="380" height="38" rx="6" fill="#D13913"/>
+    <text x="12" y="24" font-size="12" fill="#FFFFFF" font-weight="bold">@udf (default)</text>
+    <text x="368" y="24" font-size="12" fill="#FFFFFF" text-anchor="end">48.5x at 50M / 69.2x at 100M</text>
+  </g>
+  <g transform="translate(60, 166)">
+    <rect x="0" y="0" width="380" height="38" rx="6" fill="#9C4221"/>
+    <text x="12" y="24" font-size="12" fill="#FFFFFF" font-weight="bold">@udf + arrow config</text>
+    <text x="368" y="24" font-size="12" fill="#FFFFFF" text-anchor="end">48.9x at 50M / 69.0x at 100M</text>
+  </g>
+
+  <!-- Key callout for tier 1 -->
+  <rect x="480" y="126" width="420" height="78" rx="6" fill="#FFFFFF" stroke="#FC8181"/>
+  <text x="500" y="148" font-size="12" fill="#D13913" font-weight="bold">Transport format is irrelevant here:</text>
+  <text x="500" y="166" font-size="11" fill="#4A5568">Pickle: 48.5x (50M), 69.2x (100M)</text>
+  <text x="500" y="182" font-size="11" fill="#4A5568">Arrow:  48.9x (50M), 69.0x (100M)</text>
+  <text x="500" y="198" font-size="11" fill="#D13913" font-weight="bold">Same. The bottleneck is ~10M Python calls/s.</text>
+
+  <!-- Down arrow between tiers -->
+  <g transform="translate(100, 232)">
+    <polygon points="0,0 20,0 10,14" fill="#975A16"/>
+    <text x="30" y="12" font-size="12" fill="#975A16" font-weight="bold">Change physical operator (BatchEvalPython to ArrowEvalPython) = 2.3x improvement</text>
+  </g>
+
+  <!-- ═══ TIER 2: Batched scalar ═══ -->
+  <rect x="40" y="256" width="373" height="100" rx="10" fill="#FFFFF0" stroke="#FEFCBF" stroke-width="1.5"/>
+  <!-- Width represents ~21x overhead (proportional to tier 1's 880px for 49x) -->
+  <text x="60" y="280" font-size="15" fill="#975A16" font-weight="bold">TIER 2: Batched Scalar</text>
+  <text x="393" y="280" font-size="22" fill="#975A16" text-anchor="end" font-weight="bold">~9-29x</text>
+
+  <g transform="translate(60, 294)">
+    <rect x="0" y="0" width="330" height="38" rx="6" fill="#E25A1C"/>
+    <text x="12" y="24" font-size="12" fill="#FFFFFF" font-weight="bold">@udf(useArrow=True)</text>
+    <text x="318" y="24" font-size="12" fill="#FFFFFF" text-anchor="end">20.8x at 50M / 28.6x at 100M</text>
+  </g>
+
+  <!-- Tier 2 callout -->
+  <rect x="440" y="262" width="480" height="86" rx="6" fill="#FFFFFF" stroke="#FEFCBF"/>
+  <text x="460" y="284" font-size="12" fill="#975A16" font-weight="bold">Arrow batches help, but still per-row Python:</text>
+  <text x="460" y="304" font-size="11" fill="#4A5568">ArrowEvalPython batches data transfer (fewer JVM-Python round trips)</text>
+  <text x="460" y="322" font-size="11" fill="#4A5568">But your function still receives one scalar at a time</text>
+  <text x="460" y="340" font-size="11" fill="#975A16" font-weight="bold">Result: 2.3x better than Tier 1 (transport overhead reduced, call overhead remains)</text>
+
+  <!-- Down arrow -->
+  <g transform="translate(100, 358)">
+    <polygon points="0,0 20,0 10,14" fill="#276749"/>
+    <text x="30" y="12" font-size="12" fill="#276749" font-weight="bold">Vectorize execution (scalar to pyarrow.compute / Pandas) = 3-7x further improvement</text>
+  </g>
+
+  <!-- ═══ TIER 3: Vectorized ═══ -->
+  <rect x="40" y="382" width="122" height="138" rx="10" fill="#F0FFF4" stroke="#C6F6D5" stroke-width="1.5"/>
+  <!-- Width represents ~6.8x overhead -->
+  <text x="60" y="404" font-size="14" fill="#276749" font-weight="bold">TIER 3</text>
+  <text x="143" y="404" font-size="16" fill="#276749" text-anchor="end" font-weight="bold">~3-9x</text>
+
+  <g transform="translate(60, 414)">
+    <rect x="0" y="0" width="80" height="32" rx="5" fill="#8957e5"/>
+    <text x="8" y="21" font-size="10" fill="#FFFFFF" font-weight="bold">@arrow_udf</text>
+  </g>
+  <g transform="translate(60, 454)">
+    <rect x="0" y="0" width="80" height="32" rx="5" fill="#d4920b"/>
+    <text x="8" y="21" font-size="10" fill="#FFFFFF" font-weight="bold">@pandas_udf</text>
+  </g>
+
+  <!-- Tier 3 callout -->
+  <rect x="190" y="382" width="730" height="138" rx="6" fill="#FFFFFF" stroke="#C6F6D5"/>
+  <text x="210" y="406" font-size="12" fill="#276749" font-weight="bold">No per-row Python calls at all:</text>
+  <text x="210" y="428" font-size="11" fill="#4A5568">@arrow_udf: Your function receives pyarrow.Array, uses pyarrow.compute (C++ engine)</text>
+  <text x="210" y="446" font-size="11" fill="#4A5568">@pandas_udf: Your function receives pandas.Series, uses NumPy/Pandas (C engine)</text>
+  <text x="210" y="468" font-size="11" fill="#4A5568">Both use ArrowEvalPython for batched transport, but process entire batches at once</text>
+
+  <text x="210" y="496" font-size="12" fill="#276749" font-weight="bold">@arrow_udf is fastest: 6.8x at 50M (0.73s), 9.1x at 100M (1.33s)</text>
+  <text x="210" y="514" font-size="12" fill="#d4920b" font-weight="bold">@pandas_udf close behind: 7.4x at 50M (0.79s), 9.6x at 100M (1.40s)</text>
+
+  <!-- Key insight -->
+  <rect x="50" y="536" width="860" height="48" rx="8" fill="#EBF8FF" stroke="#BEE3F8"/>
+  <text x="72" y="558" font-size="13" fill="#2B6CB0" font-weight="bold">Notice the box sizes:</text>
+  <text x="240" y="558" font-size="13" fill="#2D3748">Tier 1 (880px) vs Tier 3 (122px) = proportional to actual overhead. That visual gap is real performance.</text>
+  <text x="72" y="576" font-size="11" fill="#4A5568">Width is proportional to overhead: the row-at-a-time box is 7x wider than the vectorized box.</text>
+
+  <!-- Footer -->
+  <text x="480" y="616" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Overhead vs built-in functions. Spark 4.1.0, Python 3.12, Spark Connect local[*], 32GB driver memory. Validated 100K to 100M rows.</text>
+
+  <rect x="0" y="656" width="960" height="4" fill="#E25A1C"/>
+</svg>

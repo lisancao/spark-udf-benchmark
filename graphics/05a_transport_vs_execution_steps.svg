@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 660" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="4" refY="6" orient="auto">
+      <polygon points="0 0, 8 0, 4 6" fill="#4A5568"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="660" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="960" height="4" fill="#E25A1C"/>
+
+  <!-- Title -->
+  <text x="480" y="36" font-size="22" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">From @udf to @arrow_udf: What Changes at Each Step</text>
+  <text x="480" y="56" font-size="13" fill="#718096" text-anchor="middle">Arithmetic workload, 50M rows. Each step changes one performance axis. Only execution model matters.</text>
+
+  <!-- Bar scale: 11px per 1x, bars start at x=240 -->
+
+  <!-- ═══ TIER 1: Row-at-a-time ═══ -->
+  <rect x="25" y="74" width="910" height="118" rx="8" fill="#FFF5F5" stroke="#FED7D7"/>
+  <text x="42" y="93" font-size="11" fill="#9B2C2C" font-weight="bold" letter-spacing="1.5">ROW-AT-A-TIME</text>
+  <text x="920" y="93" font-size="10" fill="#9B2C2C" text-anchor="end">BatchEvalPython</text>
+
+  <text x="225" y="122" font-size="12" fill="#4A5568" text-anchor="end">@udf (default)</text>
+  <rect x="240" y="106" width="534" height="24" rx="4" fill="#D13913"/>
+  <text x="766" y="123" font-size="12" fill="#FFFFFF" font-weight="bold" text-anchor="end">48.5x</text>
+  <text x="784" y="123" font-size="11" fill="#9B2C2C">5.20s</text>
+
+  <text x="225" y="160" font-size="12" fill="#4A5568" text-anchor="end">@udf + arrow config</text>
+  <rect x="240" y="144" width="538" height="24" rx="4" fill="#9C4221"/>
+  <text x="770" y="161" font-size="12" fill="#FFFFFF" font-weight="bold" text-anchor="end">48.9x</text>
+  <text x="788" y="161" font-size="11" fill="#9C4221">5.24s</text>
+
+  <!-- "= same" badge -->
+  <rect x="830" y="118" width="88" height="38" rx="6" fill="#FFF5F5" stroke="#FC8181"/>
+  <text x="874" y="135" font-size="14" fill="#D13913" text-anchor="middle" font-weight="bold">=</text>
+  <text x="874" y="150" font-size="9" fill="#9B2C2C" text-anchor="middle">zero difference</text>
+
+  <!-- Transition arrow 1 -->
+  <g transform="translate(0, 192)">
+    <line x1="130" y1="6" x2="130" y2="30" stroke="#4A5568" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="148" y="18" font-size="11" fill="#9B2C2C" font-weight="bold">Change transport format (pickle to Arrow)</text>
+    <rect x="520" y="4" width="170" height="22" rx="4" fill="#D13913"/>
+    <text x="605" y="19" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="bold">NO IMPROVEMENT</text>
+  </g>
+
+  <!-- ═══ TIER 2: Batched scalar ═══ -->
+  <rect x="25" y="230" width="910" height="80" rx="8" fill="#FFFFF0" stroke="#FEFCBF"/>
+  <text x="42" y="249" font-size="11" fill="#975A16" font-weight="bold" letter-spacing="1.5">BATCHED SCALAR</text>
+  <text x="920" y="249" font-size="10" fill="#975A16" text-anchor="end">ArrowEvalPython (per-row exec)</text>
+
+  <text x="225" y="282" font-size="12" fill="#4A5568" text-anchor="end">@udf(useArrow=True)</text>
+  <rect x="240" y="266" width="229" height="24" rx="4" fill="#E25A1C"/>
+  <text x="461" y="283" font-size="12" fill="#FFFFFF" font-weight="bold" text-anchor="end">20.8x</text>
+  <text x="478" y="283" font-size="11" fill="#E25A1C">2.23s</text>
+
+  <!-- 2.3x badge -->
+  <rect x="540" y="266" width="100" height="24" rx="4" fill="#FFFFF0" stroke="#FEFCBF"/>
+  <text x="590" y="283" font-size="11" fill="#975A16" text-anchor="middle" font-weight="bold">2.3x faster</text>
+
+  <!-- Transition arrow 2 -->
+  <g transform="translate(0, 310)">
+    <line x1="130" y1="6" x2="130" y2="30" stroke="#4A5568" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="148" y="18" font-size="11" fill="#975A16" font-weight="bold">Change operator (BatchEvalPython to ArrowEvalPython)</text>
+    <rect x="520" y="4" width="170" height="22" rx="4" fill="#E25A1C"/>
+    <text x="605" y="19" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="bold">2.3x IMPROVEMENT</text>
+  </g>
+
+  <!-- ═══ TIER 3: Vectorized ═══ -->
+  <rect x="25" y="348" width="910" height="118" rx="8" fill="#F0FFF4" stroke="#C6F6D5"/>
+  <text x="42" y="367" font-size="11" fill="#276749" font-weight="bold" letter-spacing="1.5">VECTORIZED</text>
+  <text x="920" y="367" font-size="10" fill="#276749" text-anchor="end">ArrowEvalPython (batch exec)</text>
+
+  <text x="225" y="396" font-size="12" fill="#4A5568" text-anchor="end">@pandas_udf</text>
+  <rect x="240" y="380" width="81" height="24" rx="4" fill="#d4920b"/>
+  <text x="330" y="397" font-size="12" fill="#d4920b" font-weight="bold">7.4x</text>
+  <text x="370" y="397" font-size="11" fill="#d4920b">0.79s</text>
+
+  <text x="225" y="434" font-size="12" fill="#4A5568" text-anchor="end">@arrow_udf</text>
+  <rect x="240" y="418" width="75" height="24" rx="4" fill="#8957e5"/>
+  <text x="324" y="435" font-size="12" fill="#8957e5" font-weight="bold">6.8x</text>
+  <text x="364" y="435" font-size="11" fill="#8957e5">0.73s</text>
+
+  <!-- fastest badge -->
+  <rect x="430" y="418" width="76" height="24" rx="4" fill="#238636"/>
+  <text x="468" y="435" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="bold">fastest</text>
+
+  <!-- 7x badge -->
+  <rect x="540" y="390" width="100" height="24" rx="4" fill="#F0FFF4" stroke="#C6F6D5"/>
+  <text x="590" y="407" font-size="11" fill="#276749" text-anchor="middle" font-weight="bold">7-10x faster</text>
+
+  <!-- Transition arrow 3 -->
+  <g transform="translate(0, 466)">
+    <line x1="130" y1="6" x2="130" y2="30" stroke="#4A5568" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="148" y="18" font-size="11" fill="#276749" font-weight="bold">Vectorize execution (scalar to pyarrow.compute / Pandas)</text>
+    <rect x="520" y="4" width="170" height="22" rx="4" fill="#238636"/>
+    <text x="605" y="19" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="bold">3-7x MORE IMPROVEMENT</text>
+  </g>
+
+  <!-- Key insight -->
+  <rect x="50" y="510" width="860" height="65" rx="8" fill="#EBF8FF" stroke="#BEE3F8"/>
+  <text x="72" y="533" font-size="13" fill="#2B6CB0" font-weight="bold">Bottom line:</text>
+  <text x="168" y="533" font-size="13" fill="#2D3748">Transport format (pickle vs Arrow) has zero effect. Execution model is everything.</text>
+  <text x="72" y="553" font-size="12" fill="#4A5568">Hierarchy: physical operator > execution model > wire format. Go from @udf to @arrow_udf for 7x wall-clock improvement.</text>
+
+  <!-- Footer -->
+  <text x="480" y="608" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Overhead vs built-in functions. Spark 4.1.0, Python 3.12, Spark Connect local[*], 32GB driver memory. Validated 100K to 100M rows.</text>
+
+  <rect x="0" y="656" width="960" height="4" fill="#E25A1C"/>
+</svg>
