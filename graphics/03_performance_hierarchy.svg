@@ -65,7 +65,7 @@
   <g transform="translate(50, 301)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-pandas)"/>
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">@pandas_udf</text>
-    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~5-7x</text>
+    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~5-10x</text>
     <text x="436" y="18" font-size="11" fill="#975A16">Arrow batch transfer + Pandas/NumPy ops</text>
     <text x="436" y="34" font-size="10" fill="#238636" font-weight="bold">Best option for Python logic</text>
   </g>
@@ -74,7 +74,7 @@
   <g transform="translate(50, 355)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-arrowudf)"/>
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">@arrow_udf</text>
-    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~3-7x</text>
+    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~3-9x</text>
     <text x="436" y="18" font-size="11" fill="#6B46C1">pyarrow.compute, no Pandas conversion overhead</text>
     <text x="436" y="34" font-size="10" fill="#8957e5">verified at 50M — fastest for string ops (1.55s vs 2.51s)</text>
   </g>
@@ -83,7 +83,7 @@
   <g transform="translate(50, 409)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-arrow)"/>
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">@udf(useArrow)</text>
-    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~9-21x</text>
+    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~9-29x</text>
     <text x="436" y="18" font-size="11" fill="#9C4221">ArrowEvalPython, per-row Python</text>
     <text x="436" y="34" font-size="10" fill="#E25A1C">vectorized transport, scalar execution</text>
   </g>
@@ -106,7 +106,7 @@
   <g transform="translate(50, 569)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-arrowopt)"/>
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">@udf + arrow config</text>
-    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~13-49x</text>
+    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~13-69x</text>
     <text x="436" y="18" font-size="11" fill="#9C4221">Arrow format, still per-row execution</text>
     <text x="436" y="34" font-size="10" fill="#FC8181">format change only -- 5.24s arithmetic</text>
   </g>
@@ -114,7 +114,7 @@
   <g transform="translate(50, 623)">
     <rect x="0" y="0" width="420" height="40" rx="6" fill="url(#h-pickle)"/>
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">@udf (default)</text>
-    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~13-49x</text>
+    <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~13-69x</text>
     <text x="436" y="18" font-size="11" fill="#9B2C2C">Pickle ser/de, per-row execution</text>
     <text x="436" y="34" font-size="10" fill="#FC8181">default -- avoid at scale -- 5.20s arithmetic</text>
   </g>
@@ -124,8 +124,8 @@
   <!-- Key insight box -->
   <rect x="50" y="735" width="860" height="75" rx="8" fill="#EBF8FF" stroke="#BEE3F8"/>
   <text x="72" y="757" font-size="12" fill="#2B6CB0" font-weight="bold">Practical guidance:</text>
-  <text x="185" y="757" font-size="12" fill="#2D3748">Can you use SQL? Free. Need Python? Start with @arrow_udf (3-7x) or @pandas_udf (5-7x). Can't vectorize? Try @udf(useArrow) (9-21x).</text>
-  <text x="72" y="777" font-size="12" fill="#2D3748">Arrow transport config has zero effect on @udf (48.9x vs 48.5x) -- the bottleneck is per-row Python calls, not serialization.</text>
+  <text x="185" y="757" font-size="12" fill="#2D3748">Can you use SQL? Free. Need Python? Start with @arrow_udf (3-9x) or @pandas_udf (5-10x). Can't vectorize? Try @udf(useArrow) (9-29x).</text>
+  <text x="72" y="777" font-size="12" fill="#2D3748">Arrow transport config has zero effect on @udf (48.9x vs 48.5x at 50M, 69.0x vs 69.2x at 100M).</text>
   <text x="72" y="797" font-size="12" fill="#2D3748">At 50M rows, @arrow_udf finishes in 0.73s arithmetic vs 5.20s for default @udf -- a 7.1x real-time saving.</text>
 
   <!-- Scale indicator -->
@@ -138,7 +138,7 @@
   </g>
 
   <!-- Footer -->
-  <text x="480" y="840" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Measured on Spark 4.1.0, Python 3.12, Spark Connect local[*], 32GB driver memory. 50M rows, median of 3 runs.</text>
+  <text x="480" y="840" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Measured on Spark 4.1.0, Python 3.12, Spark Connect local[*], 32GB driver memory. Validated from 100K to 100M rows.</text>
 
   <rect x="0" y="856" width="960" height="4" fill="#E25A1C"/>
 </svg>

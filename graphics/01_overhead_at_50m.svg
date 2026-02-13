@@ -148,6 +148,13 @@
     <text x="618" y="548" font-size="10" fill="#D13913" font-weight="700">35.1x</text>
   </g>
 
+  <!-- 100M scaling annotation -->
+  <g transform="translate(680, 88)">
+    <rect x="0" y="0" width="250" height="52" rx="5" fill="#FFF5F5" stroke="#FED7D7" stroke-width="1"/>
+    <text x="125" y="20" font-size="11" fill="#D13913" text-anchor="middle" font-weight="600">At 100M: row-at-a-time reaches 69x</text>
+    <text x="125" y="38" font-size="10" fill="#9B2C2C" text-anchor="middle">@arrow_udf stays at 9x, @pandas_udf at 10x</text>
+  </g>
+
   <!-- Legend -->
   <g transform="translate(50, 660)" font-size="10">
     <rect x="0" y="0" width="12" height="12" rx="2" fill="url(#g-builtin)"/>

@@ -6,7 +6,7 @@ Reproducible benchmark comparing the overhead of 7 PySpark UDF types across 3 wo
 
 ## The Practical Question
 
-Everyone starts with `@udf`. It works. But at scale, it hits **~49x overhead** vs built-in functions. The good news: you have options. The bad news: not all "Arrow" options are equal — and the naming in Spark 4.1 makes it easy to confuse three completely different things.
+Everyone starts with `@udf`. It works. But at scale, it hits **~49-69x overhead** vs built-in functions (superlinear growth from 50M to 100M rows). The good news: you have options. The bad news: not all "Arrow" options are equal — and the naming in Spark 4.1 makes it easy to confuse three completely different things.
 
 ## Three Things Called "Arrow UDF" in Spark 4.1
 
@@ -14,13 +14,13 @@ Spark 4.1 uses the word "Arrow" for three distinct UDF mechanisms. They look sim
 
 | Mechanism | Decorator | What Python receives | Physical operator | Overhead |
 |-----------|-----------|---------------------|-------------------|----------|
-| **`@udf` + arrow config** | `@udf` + `arrow.pyspark.enabled=true` | Scalars (one row at a time) | `BatchEvalPython` | **~49x** |
-| **`@udf(useArrow=True)`** | SPARK-43082 | Scalars (one row at a time) | `ArrowEvalPython` | **~9-21x** |
-| **`@arrow_udf`** | SPARK-53014 | `pyarrow.Array` (entire batch) | `ArrowEvalPython` | **~3-7x** |
+| **`@udf` + arrow config** | `@udf` + `arrow.pyspark.enabled=true` | Scalars (one row at a time) | `BatchEvalPython` | **~49-69x** |
+| **`@udf(useArrow=True)`** | SPARK-43082 | Scalars (one row at a time) | `ArrowEvalPython` | **~9-29x** |
+| **`@arrow_udf`** | SPARK-53014 | `pyarrow.Array` (entire batch) | `ArrowEvalPython` | **~3-9x** |
 
 The first just changes the wire format (pickle → Arrow) but keeps the same row-at-a-time `BatchEvalPython` execution — zero improvement. The second changes the physical operator to `ArrowEvalPython` which batches transport but still iterates rows in Python — 2-2.4x improvement. The third is a genuinely new execution model where your function receives entire `pyarrow.Array` objects and can use `pyarrow.compute` for vectorized operations.
 
-We verified `@arrow_udf` at 50M rows in Spark 4.1.0 — it is the fastest Python UDF option, beating `@pandas_udf` across all workloads (0.73s vs 0.79s arithmetic, 1.55s vs 2.51s string, 0.76s vs 0.82s CDF). See [results](#arrow_udf-results) below.
+We verified `@arrow_udf` at 50M and 100M rows in Spark 4.1.0 — it is the fastest Python UDF option, beating `@pandas_udf` across all workloads (0.73s vs 0.79s arithmetic, 1.55s vs 2.51s string, 0.76s vs 0.82s CDF at 50M). See [results](#arrow_udf-results) below.
 
 ## Transport vs Execution: Why Arrow Config Doesn't Help @udf
 
@@ -32,15 +32,15 @@ UDF performance has two independent axes: **transport format** (how data moves b
 
 |  | Pickle Transport | Arrow Transport |
 |---|---|---|
-| **Row-at-a-time** | `@udf` (default) **~49x** | `@udf` + arrow config **~49x** |
-| **Batch transport, scalar exec** | — | `@udf(useArrow=True)` **~9-21x** |
-| **Vectorized batch** | — | `@pandas_udf` **~5-7x**, `@arrow_udf` **~3-7x** |
+| **Row-at-a-time** | `@udf` (default) **~49-69x** | `@udf` + arrow config **~49-69x** |
+| **Batch transport, scalar exec** | — | `@udf(useArrow=True)` **~9-29x** |
+| **Vectorized batch** | — | `@pandas_udf` **~5-10x**, `@arrow_udf` **~3-9x** |
 
-**Key insight:** Switching transport format from pickle to Arrow while keeping row-at-a-time execution gives you **48.5x vs 48.9x** — essentially zero difference. The bottleneck is per-row Python function calls, not serialization format. Arrow batches only help when paired with a different physical operator (`ArrowEvalPython`) or a vectorized execution model.
+**Key insight:** Switching transport format from pickle to Arrow while keeping row-at-a-time execution gives you **48.5x vs 48.9x at 50M, 69.2x vs 69.0x at 100M** — essentially zero difference at any scale. The bottleneck is per-row Python function calls, not serialization format. Arrow batches only help when paired with a different physical operator (`ArrowEvalPython`) or a vectorized execution model.
 
 The physical operator matters more than the wire format:
-- **`BatchEvalPython`** — used by default `@udf` (both pickle and arrow config). Per-row serde regardless of format. ~49x.
-- **`ArrowEvalPython`** — used by `@udf(useArrow=True)`, `@pandas_udf`, and `@arrow_udf`. Batched Arrow transport. What your function *receives* determines the rest: scalars (~9-21x), Pandas Series (~5-7x), or PyArrow Arrays (~3-7x).
+- **`BatchEvalPython`** — used by default `@udf` (both pickle and arrow config). Per-row serde regardless of format. ~49-69x.
+- **`ArrowEvalPython`** — used by `@udf(useArrow=True)`, `@pandas_udf`, and `@arrow_udf`. Batched Arrow transport. What your function *receives* determines the rest: scalars (~9-29x), Pandas Series (~5-10x), or PyArrow Arrays (~3-9x).
 
 ## Python UDF Comparison (50M rows)
 
@@ -72,21 +72,21 @@ Need custom logic in Spark?
 │  └─ YES → Built-in functions                      ~1.0x  ← free
 │
 ├─ Need Python — can you use PyArrow compute?
-│  └─ YES → @arrow_udf                              ~3-7x  ← fastest Python option
+│  └─ YES → @arrow_udf                              ~3-9x  ← fastest Python option
 │
 ├─ Need Python — Pandas/NumPy?
-│  └─ YES → @pandas_udf                             ~5-7x
+│  └─ YES → @pandas_udf                             ~5-10x
 │
 ├─ Need Python — per-row logic, can't vectorize?
-│  └─ TRY → @udf(useArrow=True)                     ~9-21x ← 2x better than default
+│  └─ TRY → @udf(useArrow=True)                     ~9-29x ← 2x better than default
 │
 └─ Last resort
-   └─ @udf (default)                                 ~49x
+   └─ @udf (default)                                 ~49-69x
 ```
 
 ## Performance Hierarchy
 
-Three tiers of execution speed, from JVM-native (free) to row-at-a-time Python (~49x overhead):
+Three tiers of execution speed, from JVM-native (free) to row-at-a-time Python (~49-69x overhead):
 
 <p align="center">
   <img src="graphics/03_performance_hierarchy.svg" alt="PySpark UDF Performance Hierarchy" width="800"/>
@@ -94,7 +94,7 @@ Three tiers of execution speed, from JVM-native (free) to row-at-a-time Python (
 
 ## Overhead vs Built-in Functions (50M rows)
 
-For reference, here's the full picture including JVM-native baselines. Note that the high multipliers (49x) reflect comparison against Tungsten-optimized built-ins — the absolute times (5.2s for 50M rows) may be perfectly acceptable for your workload.
+For reference, here's the full picture including JVM-native baselines. Note that the high multipliers (49-69x) reflect comparison against Tungsten-optimized built-ins — the absolute times (5.2s for 50M rows, 10.1s for 100M rows) may be perfectly acceptable for your workload.
 
 <p align="center">
   <img src="graphics/01_overhead_at_50m.svg" alt="UDF Overhead at 50M Rows" width="800"/>
@@ -104,19 +104,29 @@ For reference, here's the full picture including JVM-native baselines. Note that
 |----------|-----------|--------|-----|-------|
 | Built-in functions | 1.0x | 1.0x | 1.0x | Baseline |
 | SQL UDFs | 0.9x | 1.0x | n/a | Same as built-in |
-| `@arrow_udf` | 6.8x | 3.2x | 4.3x | Flat ~3-7x |
-| `@pandas_udf` | 7.4x | 5.2x | 4.7x | Flat ~5-7x |
+| `@arrow_udf` | 6.8x | 3.2x | 4.3x | Flat ~3-9x |
+| `@pandas_udf` | 7.4x | 5.2x | 4.7x | Flat ~5-10x |
 | `@udf(useArrow=True)` | **20.8x** | 9.1x | **16.7x** | Between vectorized and row-at-a-time |
 | `@udf` + arrow config | **48.9x** | 12.8x | **35.2x** | Superlinear growth |
 | `@udf` (default) | **48.5x** | 12.8x | **35.1x** | Superlinear growth |
 
-## Overhead Scaling (100K to 50M Rows)
+## Overhead Scaling (100K to 100M Rows)
 
 <p align="center">
-  <img src="graphics/02_overhead_scaling.svg" alt="Overhead Scaling from 100K to 50M Rows" width="800"/>
+  <img src="graphics/02_overhead_scaling.svg" alt="Overhead Scaling from 100K to 100M Rows" width="800"/>
 </p>
 
-> Full analysis across 100K, 1M, 10M, and 50M rows in [docs/report.md](docs/report.md).
+At 100M rows, row-at-a-time UDFs exhibit **superlinear growth** — overhead jumps from ~49x at 50M to **69x at 100M**. Vectorized UDFs (`@arrow_udf`, `@pandas_udf`) scale much more gracefully (~9x at 100M).
+
+| UDF Type | 50M Overhead | 100M Overhead | Growth |
+|----------|-------------|--------------|--------|
+| `@arrow_udf` | 6.8x | 9.1x | Linear |
+| `@pandas_udf` | 7.4x | 9.6x | Linear |
+| `@udf(useArrow=True)` | 20.8x | 28.6x | Linear |
+| `@udf` (default) | 48.5x | **69.2x** | Superlinear |
+| `@udf` + arrow config | 48.9x | **69.0x** | Superlinear |
+
+> Full analysis across 100K, 1M, 10M, 50M, and 100M rows in [docs/report.md](docs/report.md).
 
 ## Quick Start
 
@@ -162,11 +172,11 @@ PYSPARK_PYTHON=python3 PYTHONPATH=src python -m spark_udf_benchmark \
 |---|----------|------|---------|------------------------|
 | 1 | Built-in functions | `pyspark.sql.functions` | 1.0x (baseline) | 0.11s |
 | 2 | SQL UDFs | `CREATE TEMPORARY FUNCTION` | ~1x | 0.09s |
-| 3 | `@arrow_udf` | `@arrow_udf(returnType)` (SPARK-53014) | ~3-7x | 0.73s |
-| 4 | `@pandas_udf` | `@pandas_udf(returnType)` | ~5-7x | 0.79s |
-| 5 | `@udf(useArrow=True)` | `@udf(returnType, useArrow=True)` (SPARK-43082) | ~9-21x | 2.23s |
-| 6 | `@udf` + arrow config | `@udf` + `arrow.pyspark.enabled=true` | ~49x | 5.24s |
-| 7 | `@udf` (default) | `@udf(returnType)` | ~49x | 5.20s |
+| 3 | `@arrow_udf` | `@arrow_udf(returnType)` (SPARK-53014) | ~3-9x | 0.73s |
+| 4 | `@pandas_udf` | `@pandas_udf(returnType)` | ~5-10x | 0.79s |
+| 5 | `@udf(useArrow=True)` | `@udf(returnType, useArrow=True)` (SPARK-43082) | ~9-29x | 2.23s |
+| 6 | `@udf` + arrow config | `@udf` + `arrow.pyspark.enabled=true` | ~49-69x | 5.24s |
+| 7 | `@udf` (default) | `@udf(returnType)` | ~49-69x | 5.20s |
 
 > All results at 50M rows. Scala/Java UDFs excluded (require compiled JAR). Uses Spark Connect (`remote("local[*]")`) for all benchmarks.
 
@@ -191,9 +201,9 @@ PYSPARK_PYTHON=python3 PYTHONPATH=src python -m spark_udf_benchmark \
 1. **If you need Python, use `@arrow_udf`** — it is the fastest Python UDF option across all workloads (0.73s vs 0.79s arithmetic, 1.55s vs 2.51s string, 0.76s vs 0.82s CDF at 50M rows). `@pandas_udf` is the next best option when you need Pandas/NumPy APIs.
 2. **`@arrow_udf` is especially strong on strings** — 1.6x faster than `@pandas_udf` (1.55s vs 2.51s) because `pyarrow.compute` avoids Pandas string overhead.
 3. **`@udf(useArrow=True)` is a solid middle ground** — 2-2.3x faster than default `@udf` when you can't vectorize. Uses `ArrowEvalPython` for batched Arrow transport.
-4. **Arrow transport config doesn't help `@udf`** — 48.5x vs 48.9x. Changes serialization format but keeps `BatchEvalPython`. The bottleneck is per-row Python calls, not how bytes are serialized.
+4. **Arrow transport config doesn't help `@udf`** — 48.5x vs 48.9x at 50M, 69.2x vs 69.0x at 100M. Changes serialization format but keeps `BatchEvalPython`. The bottleneck is per-row Python calls, not how bytes are serialized.
 5. **SQL UDFs are free** — they compile to Catalyst expressions, same as built-in functions.
-6. **Row-at-a-time overhead is ~49x** — higher than previously reported, confirmed with 32GB driver memory and zero cache spill.
+6. **Row-at-a-time overhead grows superlinearly** — ~49x at 50M, **~69x at 100M**. Confirmed with 32GB driver memory and zero cache spill at both scales.
 
 ## `@arrow_udf` Results
 
@@ -216,10 +226,19 @@ Confirmed results at 50M rows (median of 3 runs, 32GB driver memory):
 | `@pandas_udf` | 0.79s (7.4x) | 2.51s (5.2x) | 0.82s (4.7x) |
 | `@udf(useArrow=True)` | 2.23s (20.8x) | 4.43s (9.1x) | 2.94s (16.7x) |
 
+At 100M rows (median of 3 runs, 32GB driver memory):
+
+| UDF Type | Arithmetic | String | CDF |
+|----------|-----------|--------|-----|
+| `@arrow_udf` | 1.33s (9.1x) | 2.90s (3.2x) | 1.33s (5.0x) |
+| `@pandas_udf` | 1.40s (9.6x) | 4.74s (5.2x) | 1.45s (5.4x) |
+| `@udf(useArrow=True)` | 4.19s (28.6x) | 8.73s (9.6x) | 5.66s (21.2x) |
+
 Key observations:
-- **`@arrow_udf` is FASTER than `@pandas_udf` across ALL workloads** (0.73s vs 0.79s arithmetic, 1.55s vs 2.51s string, 0.76s vs 0.82s CDF)
-- **`@arrow_udf` is especially strong on strings: 1.6x faster than `@pandas_udf`** (1.55s vs 2.51s) — `pyarrow.compute.utf8_upper` avoids Pandas string overhead
+- **`@arrow_udf` is FASTER than `@pandas_udf` across ALL workloads** at both 50M and 100M
+- **`@arrow_udf` is especially strong on strings: 1.6x faster than `@pandas_udf`** (1.55s vs 2.51s at 50M, 2.90s vs 4.74s at 100M) — `pyarrow.compute.utf8_upper` avoids Pandas string overhead
 - **Both vectorized options are ~3x faster than `@udf(useArrow=True)`**, confirming the execution model (not just transport) is the key lever
+- **Row-at-a-time reaches 69x at 100M** (superlinear from 49x at 50M) while vectorized UDFs scale linearly
 
 ## Project Structure
 
@@ -243,7 +262,8 @@ spark-udf-benchmark/
 │   ├── 100k.json
 │   ├── 1m.json
 │   ├── 10m.json
-│   └── 50m.json
+│   ├── 50m.json
+│   └── 100m.json
 ├── docs/
 │   └── report.md            # Full analysis with all scales
 ├── Dockerfile               # Spark 4.1.0 + Java 17 + Python 3.12
@@ -265,4 +285,4 @@ spark-udf-benchmark/
 | Mode | Spark Connect |
 | Driver memory | 32GB |
 
-> Spark 4.1.0, Python 3.12, Spark Connect local[*], 32GB driver memory, 50M rows, median of 3 runs
+> Spark 4.1.0, Python 3.12, Spark Connect local[*], 32GB driver memory. Validated from 100K to 100M rows, median of 3 runs.
