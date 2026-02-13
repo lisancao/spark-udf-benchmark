@@ -194,5 +194,7 @@
     <text x="751" y="10" fill="#4A5568">@udf (default)</text>
   </g>
 
+  <text x="480" y="526" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Measured on Spark 4.1.0, Python 3.12, Spark Connect local[*], 32GB driver memory. Validated from 100K to 100M rows.</text>
+
   <rect x="0" y="536" width="960" height="4" fill="#E25A1C"/>
 </svg>

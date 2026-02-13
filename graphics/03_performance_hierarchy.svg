@@ -31,7 +31,7 @@
 
   <!-- Title -->
   <text x="480" y="40" font-size="22" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">PySpark UDF Performance Hierarchy</text>
-  <text x="480" y="62" font-size="13" fill="#718096" text-anchor="middle">Verified overhead at 50M rows (Spark 4.1.0, Spark Connect) -- lower is faster</text>
+  <text x="480" y="62" font-size="13" fill="#718096" text-anchor="middle">Verified from 50M to 100M rows (Spark 4.1.0, Spark Connect) -- lower is faster</text>
 
   <!-- ════ Tier 1: JVM-native ════ -->
   <rect x="30" y="82" width="900" height="170" rx="10" fill="#F0FFF4" stroke="#C6F6D5" filter="url(#shadow)"/>
@@ -76,7 +76,7 @@
     <text x="16" y="25" font-size="14" fill="#FFFFFF" font-weight="bold">@arrow_udf</text>
     <text x="404" y="25" font-size="14" fill="#FFFFFF" text-anchor="end" font-weight="bold">~3-9x</text>
     <text x="436" y="18" font-size="11" fill="#6B46C1">pyarrow.compute, no Pandas conversion overhead</text>
-    <text x="436" y="34" font-size="10" fill="#8957e5">verified at 50M — fastest for string ops (1.55s vs 2.51s)</text>
+    <text x="436" y="34" font-size="10" fill="#8957e5">verified 50M-100M — fastest for string ops (1.55s vs 2.51s)</text>
   </g>
 
   <!-- @udf(useArrow) bar -->

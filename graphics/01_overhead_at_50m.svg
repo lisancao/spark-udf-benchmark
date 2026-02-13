@@ -29,7 +29,7 @@
 
   <!-- Title -->
   <text x="480" y="40" font-size="20" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">UDF Overhead at 50 Million Rows</text>
-  <text x="480" y="60" font-size="12" fill="#718096" text-anchor="middle">Relative overhead vs built-in functions (Spark 4.1.0, Spark Connect, local[*])</text>
+  <text x="480" y="60" font-size="12" fill="#718096" text-anchor="middle">Relative overhead vs built-in functions (Spark 4.1.0, Spark Connect, local[*], validated to 100M)</text>
 
   <!-- Scale: ~560px for ~49x => 11.43px per 1x -->
   <g transform="translate(0, 80)">

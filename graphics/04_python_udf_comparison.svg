@@ -20,7 +20,7 @@
     </filter>
   </defs>
 
-  <rect width="960" height="850" fill="#FFFFFF"/>
+  <rect width="960" height="920" fill="#FFFFFF"/>
   <rect x="0" y="0" width="960" height="4" fill="#E25A1C"/>
 
   <!-- Title -->

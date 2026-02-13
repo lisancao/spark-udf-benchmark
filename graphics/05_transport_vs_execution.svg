@@ -16,7 +16,7 @@
 
   <!-- Title -->
   <text x="480" y="36" font-size="22" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">Transport vs Execution Model</text>
-  <text x="480" y="56" font-size="13" fill="#718096" text-anchor="middle">Two independent axes determine Python UDF performance -- only one of them matters</text>
+  <text x="480" y="56" font-size="13" fill="#718096" text-anchor="middle">Two independent axes determine Python UDF performance (verified 50M-100M rows)</text>
 
   <!-- Column headers (transport axis) -->
   <text x="330" y="97" font-size="14" fill="#4A5568" text-anchor="middle" font-weight="bold">Pickle Transport</text>
