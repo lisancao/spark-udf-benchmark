@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 700" font-family="'Segoe UI', Arial, Helvetica, sans-serif">
   <defs>
     <linearGradient id="g-builtin" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0%" stop-color="#238636"/><stop offset="100%" stop-color="#2ea043"/>
@@ -6,11 +6,14 @@
     <linearGradient id="g-sql" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0%" stop-color="#1f6feb"/><stop offset="100%" stop-color="#388bfd"/>
     </linearGradient>
-    <linearGradient id="g-arrow" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0%" stop-color="#E25A1C"/><stop offset="100%" stop-color="#F47A3E"/>
+    <linearGradient id="g-arrowudf" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#8957e5"/><stop offset="100%" stop-color="#a371f7"/>
     </linearGradient>
     <linearGradient id="g-pandas" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0%" stop-color="#d4920b"/><stop offset="100%" stop-color="#e3a917"/>
+    </linearGradient>
+    <linearGradient id="g-arrow" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stop-color="#E25A1C"/><stop offset="100%" stop-color="#F47A3E"/>
     </linearGradient>
     <linearGradient id="g-arrowopt" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0%" stop-color="#9C4221"/><stop offset="100%" stop-color="#C05621"/>
@@ -21,30 +24,32 @@
   </defs>
 
   <!-- Background -->
-  <rect width="960" height="640" fill="#FFFFFF"/>
+  <rect width="960" height="700" fill="#FFFFFF"/>
   <rect x="0" y="0" width="960" height="4" fill="#E25A1C"/>
 
   <!-- Title -->
   <text x="480" y="40" font-size="20" fill="#1A202C" text-anchor="middle" font-weight="bold" letter-spacing="1">UDF Overhead at 50 Million Rows</text>
   <text x="480" y="60" font-size="12" fill="#718096" text-anchor="middle">Relative overhead vs built-in functions (Spark 4.1.0, Spark Connect, local[*])</text>
 
-  <!-- Scale: 690px for 45x => 15.33px per 1x -->
+  <!-- Scale: ~560px for ~49x => 11.43px per 1x -->
   <g transform="translate(0, 80)">
 
     <!-- X-axis gridlines from x=210 -->
     <g stroke="#EDF2F7" stroke-width="0.5" stroke-dasharray="3,3">
-      <line x1="210" y1="0" x2="210" y2="490"/>
-      <line x1="363.3" y1="0" x2="363.3" y2="490"/>
-      <line x1="516.7" y1="0" x2="516.7" y2="490"/>
-      <line x1="670" y1="0" x2="670" y2="490"/>
-      <line x1="823.3" y1="0" x2="823.3" y2="490"/>
+      <line x1="210" y1="0" x2="210" y2="550"/>
+      <line x1="324.3" y1="0" x2="324.3" y2="550"/>
+      <line x1="438.6" y1="0" x2="438.6" y2="550"/>
+      <line x1="552.9" y1="0" x2="552.9" y2="550"/>
+      <line x1="667.2" y1="0" x2="667.2" y2="550"/>
+      <line x1="781.5" y1="0" x2="781.5" y2="550"/>
     </g>
     <g font-size="10" fill="#A0AEC0" text-anchor="middle">
-      <text x="210" y="505">0x</text>
-      <text x="363.3" y="505">10x</text>
-      <text x="516.7" y="505">20x</text>
-      <text x="670" y="505">30x</text>
-      <text x="823.3" y="505">40x</text>
+      <text x="210" y="565">0x</text>
+      <text x="324.3" y="565">10x</text>
+      <text x="438.6" y="565">20x</text>
+      <text x="552.9" y="565">30x</text>
+      <text x="667.2" y="565">40x</text>
+      <text x="781.5" y="565">50x</text>
     </g>
 
     <!-- ── ARITHMETIC ── -->
@@ -53,99 +58,113 @@
     <text x="185" y="16" font-size="10" fill="#A0AEC0" text-anchor="end">x * 2 + 1</text>
 
     <text x="200" y="42" font-size="10" fill="#4A5568" text-anchor="end">Built-in</text>
-    <rect x="210" y="30" width="15.3" height="18" rx="3" fill="url(#g-builtin)"/>
-    <text x="232" y="44" font-size="10" fill="#238636" font-weight="600">1.0x</text>
+    <rect x="210" y="30" width="11.4" height="18" rx="3" fill="url(#g-builtin)"/>
+    <text x="228" y="44" font-size="10" fill="#238636" font-weight="600">1.0x</text>
 
     <text x="200" y="64" font-size="10" fill="#4A5568" text-anchor="end">SQL UDF</text>
-    <rect x="210" y="52" width="12.3" height="18" rx="3" fill="url(#g-sql)"/>
-    <text x="228" y="66" font-size="10" fill="#1f6feb" font-weight="600">0.8x</text>
+    <rect x="210" y="52" width="10.3" height="18" rx="3" fill="url(#g-sql)"/>
+    <text x="226" y="66" font-size="10" fill="#1f6feb" font-weight="600">0.9x</text>
 
-    <text x="200" y="86" font-size="10" fill="#4A5568" text-anchor="end">@pandas_udf</text>
-    <rect x="210" y="74" width="99.6" height="18" rx="3" fill="url(#g-pandas)"/>
-    <text x="316" y="88" font-size="10" fill="#d4920b" font-weight="600">6.5x</text>
+    <text x="200" y="86" font-size="10" fill="#4A5568" text-anchor="end">@arrow_udf</text>
+    <rect x="210" y="74" width="77.7" height="18" rx="3" fill="url(#g-arrowudf)"/>
+    <text x="294" y="88" font-size="10" fill="#8957e5" font-weight="600">6.8x</text>
 
-    <text x="200" y="108" font-size="10" fill="#4A5568" text-anchor="end">@udf(useArrow)</text>
-    <rect x="210" y="96" width="254.5" height="18" rx="3" fill="url(#g-arrow)"/>
-    <text x="471" y="110" font-size="10" fill="#E25A1C" font-weight="600">16.6x</text>
+    <text x="200" y="108" font-size="10" fill="#4A5568" text-anchor="end">@pandas_udf</text>
+    <rect x="210" y="96" width="84.6" height="18" rx="3" fill="url(#g-pandas)"/>
+    <text x="301" y="110" font-size="10" fill="#d4920b" font-weight="600">7.4x</text>
 
-    <text x="200" y="130" font-size="10" fill="#4A5568" text-anchor="end">@udf (default)</text>
-    <rect x="210" y="118" width="608.6" height="18" rx="3" fill="url(#g-pickle)"/>
-    <text x="825" y="132" font-size="10" fill="#D13913" font-weight="700">39.7x</text>
+    <text x="200" y="130" font-size="10" fill="#4A5568" text-anchor="end">@udf(useArrow)</text>
+    <rect x="210" y="118" width="237.7" height="18" rx="3" fill="url(#g-arrow)"/>
+    <text x="454" y="132" font-size="10" fill="#E25A1C" font-weight="600">20.8x</text>
 
     <text x="200" y="152" font-size="10" fill="#4A5568" text-anchor="end">@udf + arrow config</text>
-    <rect x="210" y="140" width="622.4" height="18" rx="3" fill="url(#g-arrowopt)"/>
-    <text x="839" y="154" font-size="10" fill="#9C4221" font-weight="700">40.6x</text>
+    <rect x="210" y="140" width="558.9" height="18" rx="3" fill="url(#g-arrowopt)"/>
+    <text x="775" y="154" font-size="10" fill="#9C4221" font-weight="700">48.9x</text>
+
+    <text x="200" y="174" font-size="10" fill="#4A5568" text-anchor="end">@udf (default)</text>
+    <rect x="210" y="162" width="554.4" height="18" rx="3" fill="url(#g-pickle)"/>
+    <text x="771" y="176" font-size="10" fill="#D13913" font-weight="700">48.5x</text>
 
     <!-- ── STRING ── -->
-    <rect x="15" y="175" width="185" height="22" rx="3" fill="#F7FAFC"/>
-    <text x="22" y="191" font-size="13" fill="#2D3748" font-weight="bold">String</text>
-    <text x="185" y="191" font-size="10" fill="#A0AEC0" text-anchor="end">upper + suffix</text>
+    <rect x="15" y="197" width="185" height="22" rx="3" fill="#F7FAFC"/>
+    <text x="22" y="213" font-size="13" fill="#2D3748" font-weight="bold">String</text>
+    <text x="185" y="213" font-size="10" fill="#A0AEC0" text-anchor="end">upper + suffix</text>
 
-    <text x="200" y="217" font-size="10" fill="#4A5568" text-anchor="end">Built-in</text>
-    <rect x="210" y="205" width="15.3" height="18" rx="3" fill="url(#g-builtin)"/>
-    <text x="232" y="219" font-size="10" fill="#238636" font-weight="600">1.0x</text>
+    <text x="200" y="239" font-size="10" fill="#4A5568" text-anchor="end">Built-in</text>
+    <rect x="210" y="227" width="11.4" height="18" rx="3" fill="url(#g-builtin)"/>
+    <text x="228" y="241" font-size="10" fill="#238636" font-weight="600">1.0x</text>
 
-    <text x="200" y="239" font-size="10" fill="#4A5568" text-anchor="end">SQL UDF</text>
-    <rect x="210" y="227" width="15.3" height="18" rx="3" fill="url(#g-sql)"/>
-    <text x="232" y="241" font-size="10" fill="#1f6feb" font-weight="600">1.0x</text>
+    <text x="200" y="261" font-size="10" fill="#4A5568" text-anchor="end">SQL UDF</text>
+    <rect x="210" y="249" width="11.4" height="18" rx="3" fill="url(#g-sql)"/>
+    <text x="228" y="263" font-size="10" fill="#1f6feb" font-weight="600">1.0x</text>
 
-    <text x="200" y="261" font-size="10" fill="#4A5568" text-anchor="end">@pandas_udf</text>
-    <rect x="210" y="249" width="73.6" height="18" rx="3" fill="url(#g-pandas)"/>
-    <text x="290" y="263" font-size="10" fill="#d4920b" font-weight="600">4.8x</text>
+    <text x="200" y="283" font-size="10" fill="#4A5568" text-anchor="end">@arrow_udf</text>
+    <rect x="210" y="271" width="36.6" height="18" rx="3" fill="url(#g-arrowudf)"/>
+    <text x="253" y="285" font-size="10" fill="#8957e5" font-weight="600">3.2x</text>
 
-    <text x="200" y="283" font-size="10" fill="#4A5568" text-anchor="end">@udf(useArrow)</text>
-    <rect x="210" y="271" width="88.9" height="18" rx="3" fill="url(#g-arrow)"/>
-    <text x="305" y="285" font-size="10" fill="#E25A1C" font-weight="600">5.8x</text>
+    <text x="200" y="305" font-size="10" fill="#4A5568" text-anchor="end">@pandas_udf</text>
+    <rect x="210" y="293" width="59.4" height="18" rx="3" fill="url(#g-pandas)"/>
+    <text x="276" y="307" font-size="10" fill="#d4920b" font-weight="600">5.2x</text>
 
-    <text x="200" y="305" font-size="10" fill="#4A5568" text-anchor="end">@udf (default)</text>
-    <rect x="210" y="293" width="171.7" height="18" rx="3" fill="url(#g-pickle)"/>
-    <text x="388" y="307" font-size="10" fill="#D13913" font-weight="600">11.2x</text>
+    <text x="200" y="327" font-size="10" fill="#4A5568" text-anchor="end">@udf(useArrow)</text>
+    <rect x="210" y="315" width="104.0" height="18" rx="3" fill="url(#g-arrow)"/>
+    <text x="320" y="329" font-size="10" fill="#E25A1C" font-weight="600">9.1x</text>
 
-    <text x="200" y="327" font-size="10" fill="#4A5568" text-anchor="end">@udf + arrow config</text>
-    <rect x="210" y="315" width="171.7" height="18" rx="3" fill="url(#g-arrowopt)"/>
-    <text x="388" y="329" font-size="10" fill="#9C4221" font-weight="600">11.2x</text>
+    <text x="200" y="349" font-size="10" fill="#4A5568" text-anchor="end">@udf + arrow config</text>
+    <rect x="210" y="337" width="146.3" height="18" rx="3" fill="url(#g-arrowopt)"/>
+    <text x="363" y="351" font-size="10" fill="#9C4221" font-weight="600">12.8x</text>
+
+    <text x="200" y="371" font-size="10" fill="#4A5568" text-anchor="end">@udf (default)</text>
+    <rect x="210" y="359" width="146.3" height="18" rx="3" fill="url(#g-pickle)"/>
+    <text x="363" y="373" font-size="10" fill="#D13913" font-weight="600">12.8x</text>
 
     <!-- ── NORMAL CDF ── -->
-    <rect x="15" y="350" width="185" height="22" rx="3" fill="#F7FAFC"/>
-    <text x="22" y="366" font-size="13" fill="#2D3748" font-weight="bold">Normal CDF</text>
-    <text x="185" y="366" font-size="10" fill="#A0AEC0" text-anchor="end">erf approximation</text>
+    <rect x="15" y="394" width="185" height="22" rx="3" fill="#F7FAFC"/>
+    <text x="22" y="410" font-size="13" fill="#2D3748" font-weight="bold">Normal CDF</text>
+    <text x="185" y="410" font-size="10" fill="#A0AEC0" text-anchor="end">erf approximation</text>
 
-    <text x="200" y="392" font-size="10" fill="#4A5568" text-anchor="end">Built-in</text>
-    <rect x="210" y="380" width="15.3" height="18" rx="3" fill="url(#g-builtin)"/>
-    <text x="232" y="394" font-size="10" fill="#238636" font-weight="600">1.0x</text>
+    <text x="200" y="436" font-size="10" fill="#4A5568" text-anchor="end">Built-in</text>
+    <rect x="210" y="424" width="11.4" height="18" rx="3" fill="url(#g-builtin)"/>
+    <text x="228" y="438" font-size="10" fill="#238636" font-weight="600">1.0x</text>
 
-    <text x="200" y="414" font-size="10" fill="#4A5568" text-anchor="end">@pandas_udf</text>
-    <rect x="210" y="402" width="79.7" height="18" rx="3" fill="url(#g-pandas)"/>
-    <text x="296" y="416" font-size="10" fill="#d4920b" font-weight="600">5.2x</text>
+    <text x="200" y="458" font-size="10" fill="#4A5568" text-anchor="end">@arrow_udf</text>
+    <rect x="210" y="446" width="49.1" height="18" rx="3" fill="url(#g-arrowudf)"/>
+    <text x="266" y="460" font-size="10" fill="#8957e5" font-weight="600">4.3x</text>
 
-    <text x="200" y="436" font-size="10" fill="#4A5568" text-anchor="end">@udf(useArrow)</text>
-    <rect x="210" y="424" width="243.7" height="18" rx="3" fill="url(#g-arrow)"/>
-    <text x="460" y="438" font-size="10" fill="#E25A1C" font-weight="600">15.9x</text>
+    <text x="200" y="480" font-size="10" fill="#4A5568" text-anchor="end">@pandas_udf</text>
+    <rect x="210" y="468" width="53.7" height="18" rx="3" fill="url(#g-pandas)"/>
+    <text x="270" y="482" font-size="10" fill="#d4920b" font-weight="600">4.7x</text>
 
-    <text x="200" y="458" font-size="10" fill="#4A5568" text-anchor="end">@udf (default)</text>
-    <rect x="210" y="446" width="541.2" height="18" rx="3" fill="url(#g-pickle)"/>
-    <text x="758" y="460" font-size="10" fill="#D13913" font-weight="700">35.3x</text>
+    <text x="200" y="502" font-size="10" fill="#4A5568" text-anchor="end">@udf(useArrow)</text>
+    <rect x="210" y="490" width="190.9" height="18" rx="3" fill="url(#g-arrow)"/>
+    <text x="407" y="504" font-size="10" fill="#E25A1C" font-weight="600">16.7x</text>
 
-    <text x="200" y="480" font-size="10" fill="#4A5568" text-anchor="end">@udf + arrow config</text>
-    <rect x="210" y="468" width="539.6" height="18" rx="3" fill="url(#g-arrowopt)"/>
-    <text x="756" y="482" font-size="10" fill="#9C4221" font-weight="700">35.2x</text>
+    <text x="200" y="524" font-size="10" fill="#4A5568" text-anchor="end">@udf + arrow config</text>
+    <rect x="210" y="512" width="402.3" height="18" rx="3" fill="url(#g-arrowopt)"/>
+    <text x="619" y="526" font-size="10" fill="#9C4221" font-weight="700">35.2x</text>
+
+    <text x="200" y="546" font-size="10" fill="#4A5568" text-anchor="end">@udf (default)</text>
+    <rect x="210" y="534" width="401.2" height="18" rx="3" fill="url(#g-pickle)"/>
+    <text x="618" y="548" font-size="10" fill="#D13913" font-weight="700">35.1x</text>
   </g>
 
   <!-- Legend -->
-  <g transform="translate(80, 600)" font-size="10">
+  <g transform="translate(50, 660)" font-size="10">
     <rect x="0" y="0" width="12" height="12" rx="2" fill="url(#g-builtin)"/>
     <text x="16" y="10" fill="#4A5568">Built-in</text>
-    <rect x="75" y="0" width="12" height="12" rx="2" fill="url(#g-sql)"/>
-    <text x="91" y="10" fill="#4A5568">SQL UDF</text>
-    <rect x="150" y="0" width="12" height="12" rx="2" fill="url(#g-pandas)"/>
-    <text x="166" y="10" fill="#4A5568">@pandas_udf</text>
-    <rect x="260" y="0" width="12" height="12" rx="2" fill="url(#g-arrow)"/>
-    <text x="276" y="10" fill="#4A5568">@udf(useArrow)</text>
-    <rect x="390" y="0" width="12" height="12" rx="2" fill="url(#g-arrowopt)"/>
-    <text x="406" y="10" fill="#4A5568">@udf + arrow config</text>
-    <rect x="545" y="0" width="12" height="12" rx="2" fill="url(#g-pickle)"/>
-    <text x="561" y="10" fill="#4A5568">@udf (default)</text>
+    <rect x="72" y="0" width="12" height="12" rx="2" fill="url(#g-sql)"/>
+    <text x="88" y="10" fill="#4A5568">SQL UDF</text>
+    <rect x="148" y="0" width="12" height="12" rx="2" fill="url(#g-arrowudf)"/>
+    <text x="164" y="10" fill="#4A5568">@arrow_udf</text>
+    <rect x="248" y="0" width="12" height="12" rx="2" fill="url(#g-pandas)"/>
+    <text x="264" y="10" fill="#4A5568">@pandas_udf</text>
+    <rect x="358" y="0" width="12" height="12" rx="2" fill="url(#g-arrow)"/>
+    <text x="374" y="10" fill="#4A5568">@udf(useArrow)</text>
+    <rect x="490" y="0" width="12" height="12" rx="2" fill="url(#g-arrowopt)"/>
+    <text x="506" y="10" fill="#4A5568">@udf + arrow config</text>
+    <rect x="640" y="0" width="12" height="12" rx="2" fill="url(#g-pickle)"/>
+    <text x="656" y="10" fill="#4A5568">@udf (default)</text>
   </g>
 
-  <rect x="0" y="636" width="960" height="4" fill="#E25A1C"/>
+  <rect x="0" y="696" width="960" height="4" fill="#E25A1C"/>
 </svg>

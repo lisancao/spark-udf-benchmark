@@ -1,12 +1,13 @@
 """UDF Performance Benchmark: Compare overhead of different UDF types.
 
-Benchmarks 6 UDF types across 3 workload tiers to measure relative overhead:
+Benchmarks 7 UDF types across 3 workload tiers to measure relative overhead:
 1. Built-in functions (baseline, ~1x)
 2. SQL UDFs (CREATE FUNCTION)
-3. Arrow UDFs (Spark 4.1, SPARK-53014)
-4. Pandas UDFs (@pandas_udf)
-5. Arrow-optimized Python UDFs (@udf with arrow enabled)
-6. Pickle Python UDFs (@udf with arrow disabled)
+3. @arrow_udf  — pyarrow.compute vectorized (SPARK-53014)
+4. @pandas_udf — Pandas/NumPy vectorized
+5. @udf(useArrow=True) — Arrow transport, per-row exec (SPARK-43082)
+6. @udf + arrow config — arrow.pyspark.enabled=true, per-row exec
+7. @udf (default) — pickle transport, per-row exec
 
 Note: Scala/Java UDFs are excluded (require compiled JAR).
 
@@ -34,8 +35,8 @@ class UdfPipelineBenchmark:
 
     WORKLOADS = ["arithmetic", "string", "cdf"]
     UDF_TYPES = [
-        "builtin", "sql_udf", "arrow_udf",
-        "pandas_udf", "arrow_opt_python", "pickle_python",
+        "builtin", "sql_udf", "arrow_udf", "pandas_udf",
+        "useArrow_udf", "arrow_opt_python", "pickle_python",
     ]
 
     def __init__(
@@ -125,34 +126,69 @@ class UdfPipelineBenchmark:
         )
 
     # ------------------------------------------------------------------
-    # Arrow-optimized UDFs (@udf with useArrow=True, SPARK-43082)
+    # @arrow_udf — pyarrow.compute vectorized (SPARK-53014)
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _make_arrow_udfs() -> Dict[str, Callable]:
-        """Create Arrow-optimized UDFs via useArrow=True.
+    def _make_arrow_native_udfs() -> Dict[str, Callable]:
+        """Create @arrow_udf functions (SPARK-53014).
 
-        These go through ArrowEvalPython (vectorized Arrow batches)
-        unlike the config toggle which is still row-at-a-time.
+        Function receives pyarrow.Array, uses pyarrow.compute for
+        truly vectorized batch processing. No per-row Python calls.
+        """
+        from pyspark.sql.functions import arrow_udf
+        import pyarrow as pa
+        import pyarrow.compute as pc
+
+        @arrow_udf(DoubleType())
+        def native_arith(x: pa.Array) -> pa.Array:
+            return pc.add(pc.multiply(x, 2), 1)
+
+        @arrow_udf(StringType())
+        def native_string(x: pa.Array) -> pa.Array:
+            upper = pc.utf8_upper(x)
+            suffix = pa.array(["_SUFFIX"] * len(upper), type=pa.string())
+            return pc.binary_join_element_wise(upper, suffix, "")
+
+        @arrow_udf(DoubleType())
+        def native_cdf(x: pa.Array) -> pa.Array:
+            import numpy as np
+            from scipy.special import erf
+            arr = x.to_numpy()
+            result = 0.5 * (1.0 + erf(arr / np.sqrt(2.0)))
+            return pa.array(result)
+
+        return {"arithmetic": native_arith, "string": native_string, "cdf": native_cdf}
+
+    # ------------------------------------------------------------------
+    # @udf(useArrow=True) — Arrow transport, per-row exec (SPARK-43082)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _make_useArrow_udfs() -> Dict[str, Callable]:
+        """Create @udf(useArrow=True) functions (SPARK-43082).
+
+        Uses ArrowEvalPython for batched Arrow transport but still
+        executes Python per-row (scalar in, scalar out).
         """
         from pyspark.sql.functions import udf
 
         @udf(DoubleType(), useArrow=True)
-        def arrow_arith(x):
+        def useArrow_arith(x):
             return float(x) * 2 + 1 if x is not None else None
 
         @udf(StringType(), useArrow=True)
-        def arrow_string(x):
+        def useArrow_string(x):
             return x.upper() + "_SUFFIX" if x is not None else None
 
         @udf(DoubleType(), useArrow=True)
-        def arrow_cdf(x):
+        def useArrow_cdf(x):
             if x is None:
                 return None
             import math as _math
             return 0.5 * (1.0 + _math.erf(float(x) / _math.sqrt(2.0)))
 
-        return {"arithmetic": arrow_arith, "string": arrow_string, "cdf": arrow_cdf}
+        return {"arithmetic": useArrow_arith, "string": useArrow_string, "cdf": useArrow_cdf}
 
     # ------------------------------------------------------------------
     # Pandas UDFs
@@ -253,8 +289,9 @@ class UdfPipelineBenchmark:
         self._register_sql_udfs()
 
         # Build UDF lookup
-        arrow_udfs = self._make_arrow_udfs()
+        arrow_native_udfs = self._make_arrow_native_udfs()
         pandas_udfs = self._make_pandas_udfs()
+        useArrow_udfs = self._make_useArrow_udfs()
         python_udfs = self._make_python_udfs()
 
         def _apply(udf_fn: Callable, col_name: str) -> Callable:
@@ -274,14 +311,19 @@ class UdfPipelineBenchmark:
                 # CDF not expressible in SQL UDF
             },
             "arrow_udf": {
-                "arithmetic": _apply(arrow_udfs["arithmetic"], "value"),
-                "string": _apply(arrow_udfs["string"], "name"),
-                "cdf": _apply(arrow_udfs["cdf"], "value"),
+                "arithmetic": _apply(arrow_native_udfs["arithmetic"], "value"),
+                "string": _apply(arrow_native_udfs["string"], "name"),
+                "cdf": _apply(arrow_native_udfs["cdf"], "value"),
             },
             "pandas_udf": {
                 "arithmetic": _apply(pandas_udfs["arithmetic"], "value"),
                 "string": _apply(pandas_udfs["string"], "name"),
                 "cdf": _apply(pandas_udfs["cdf"], "value"),
+            },
+            "useArrow_udf": {
+                "arithmetic": _apply(useArrow_udfs["arithmetic"], "value"),
+                "string": _apply(useArrow_udfs["string"], "name"),
+                "cdf": _apply(useArrow_udfs["cdf"], "value"),
             },
             "arrow_opt_python": {
                 "arithmetic": _apply(python_udfs["arithmetic"], "value"),

@@ -1,9 +1,11 @@
 services:
   benchmark:
     build: .
+    mem_limit: 48g
     environment:
       - SPARK_MASTER=local[*]
       - PYSPARK_PYTHON=python3
+      - SPARK_DRIVER_MEMORY=32g
     volumes:
       - ./results:/opt/benchmark/results
     # Override CMD to run specific scale:
@@ -14,6 +16,7 @@ services:
 
   test:
     build: .
+    mem_limit: 16g
     entrypoint: ["python3", "-m", "pytest"]
     command: ["tests/", "-v"]
     environment:

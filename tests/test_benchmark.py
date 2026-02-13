@@ -3,7 +3,7 @@
 Runs with TINY scale (1 000 rows) to verify UDF types produce correct
 results and that timing is recorded.
 
-Arrow UDFs use ArrowEvalPython and work in both classic and Connect modes.
+Tests all 7 UDF types including @arrow_udf (SPARK-53014) and @udf(useArrow=True) (SPARK-43082).
 """
 
 import pytest
@@ -81,24 +81,48 @@ class TestSqlUDFs:
         assert row.result == "ITEM_00000_SUFFIX"
 
 
-class TestArrowUDFs:
+class TestArrowNativeUDFs:
+    """Tests for @arrow_udf (SPARK-53014) — pyarrow.compute vectorized."""
 
     @pytest.fixture(scope="class")
-    def arrow_udfs(self):
-        return UdfPipelineBenchmark._make_arrow_udfs()
+    def arrow_native_udfs(self):
+        return UdfPipelineBenchmark._make_arrow_native_udfs()
 
-    def test_arithmetic(self, test_df, arrow_udfs):
-        result = test_df.withColumn("result", arrow_udfs["arithmetic"](F.col("value")))
+    def test_arithmetic(self, test_df, arrow_native_udfs):
+        result = test_df.withColumn("result", arrow_native_udfs["arithmetic"](F.col("value")))
         row = result.filter(F.col("id") == 0).select("result").collect()[0]
         assert row.result == pytest.approx(1.0)
 
-    def test_string(self, test_df, arrow_udfs):
-        result = test_df.withColumn("result", arrow_udfs["string"](F.col("name")))
+    def test_string(self, test_df, arrow_native_udfs):
+        result = test_df.withColumn("result", arrow_native_udfs["string"](F.col("name")))
         row = result.filter(F.col("id") == 0).select("result").collect()[0]
         assert row.result == "ITEM_00000_SUFFIX"
 
-    def test_cdf(self, test_df, arrow_udfs):
-        result = test_df.withColumn("result", arrow_udfs["cdf"](F.col("value")))
+    def test_cdf(self, test_df, arrow_native_udfs):
+        result = test_df.withColumn("result", arrow_native_udfs["cdf"](F.col("value")))
+        row = result.filter(F.col("id") == 0).select("result").collect()[0]
+        assert row.result == pytest.approx(0.5, abs=0.01)
+
+
+class TestUseArrowUDFs:
+    """Tests for @udf(useArrow=True) (SPARK-43082) — Arrow transport, per-row exec."""
+
+    @pytest.fixture(scope="class")
+    def useArrow_udfs(self):
+        return UdfPipelineBenchmark._make_useArrow_udfs()
+
+    def test_arithmetic(self, test_df, useArrow_udfs):
+        result = test_df.withColumn("result", useArrow_udfs["arithmetic"](F.col("value")))
+        row = result.filter(F.col("id") == 0).select("result").collect()[0]
+        assert row.result == pytest.approx(1.0)
+
+    def test_string(self, test_df, useArrow_udfs):
+        result = test_df.withColumn("result", useArrow_udfs["string"](F.col("name")))
+        row = result.filter(F.col("id") == 0).select("result").collect()[0]
+        assert row.result == "ITEM_00000_SUFFIX"
+
+    def test_cdf(self, test_df, useArrow_udfs):
+        result = test_df.withColumn("result", useArrow_udfs["cdf"](F.col("value")))
         row = result.filter(F.col("id") == 0).select("result").collect()[0]
         assert row.result == pytest.approx(0.5, abs=0.01)
 
@@ -154,7 +178,7 @@ class TestRunComparison:
 
     def test_run_comparison_returns_results(self, benchmark):
         results = benchmark.run_comparison(row_count=TINY_ROWS)
-        assert len(results) >= 14
+        assert len(results) >= 17
         for _key, result in results.items():
             assert isinstance(result, UdfBenchmarkResult)
             assert result.row_count == TINY_ROWS
