@@ -49,12 +49,12 @@
   <rect x="440" y="175" width="20" height="24" rx="4" fill="#FFFFFF"/>
   <text x="450" y="195" font-size="20" fill="#A0AEC0" text-anchor="middle">=</text>
 
-  <!-- ═══════ Cell (2,1): Pickle x Vectorized -- doesn't exist ═══════ -->
+  <!-- Cell (2,1): Pickle x Vectorized, does not exist -->
   <rect x="210" y="275" width="235" height="130" rx="8" fill="url(#hatching)" stroke="#E2E8F0" filter="url(#shadow)"/>
   <text x="328" y="338" font-size="14" fill="#A0AEC0" text-anchor="middle" font-style="italic">not possible</text>
   <text x="328" y="358" font-size="11" fill="#CBD5E0" text-anchor="middle">pickle can't batch</text>
 
-  <!-- ═══════ Cell (2,2): Arrow x Vectorized -- @pandas_udf & @arrow_udf ═══════ -->
+  <!-- Cell (2,2): Arrow x Vectorized, @pandas_udf and @arrow_udf -->
   <rect x="455" y="275" width="235" height="130" rx="8" fill="#F0FFF4" stroke="#C6F6D5" filter="url(#shadow)"/>
   <text x="573" y="314" font-size="30" fill="#238636" text-anchor="middle" font-weight="bold">~3-9x</text>
   <text x="573" y="336" font-size="13" fill="#276749" text-anchor="middle">@pandas_udf  |  @arrow_udf</text>
@@ -87,7 +87,7 @@
   <text x="72" y="472" font-size="12" fill="#4A5568">Arrow batches only help when paired with vectorized execution (@pandas_udf / @arrow_udf). Changing transport alone changes nothing.</text>
 
   <!-- Footer -->
-  <text x="480" y="530" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Overhead vs built-in functions. Overhead vs built-in functions. Measured on Spark 4.1.0, Python 3.12, Spark Connect local[*]. Validated from 100K to 100M rows with 32GB driver memory.</text>
+  <text x="480" y="530" font-size="10" fill="#A0AEC0" text-anchor="middle" font-style="italic">Overhead vs built-in functions. Measured on Spark 4.1.0, Python 3.12, Spark Connect local[*]. Validated from 100K to 100M rows with 32GB driver memory.</text>
 
   <rect x="0" y="576" width="960" height="4" fill="#E25A1C"/>
 </svg>
